@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111111">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="LWH Manager">
+  <title>LWH Transportation Manager</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="manager.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="tb-left">
+      <button class="tb-mark" id="btnHome" aria-label="Home">LW</button>
+      <div>
+        <div class="tb-title"><span class="tb-long">Transportation Manager</span><span class="tb-short">LWH Manager</span></div>
+        <div class="tb-sub" id="tbSub">Logistics Warehouse</div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <button class="tb-btn tb-text" id="btnBack" hidden>‹ Home</button>
+      <button class="tb-btn" id="btnInstall" hidden aria-label="Install app" title="Install app">⤓</button>
+      <button class="tb-btn" id="btnRefresh" title="Refresh" aria-label="Refresh">⟳</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- HOME -->
+    <section class="screen" id="scrHome">
+      <div class="wrap">
+        <div class="hub-hello">
+          <h1 class="page-h" id="hubHello">Good morning</h1>
+          <div class="muted" id="hubWx">Logistics Warehouse · Transportation</div>
+        </div>
+        <div class="hub-sec">Approvals</div>
+        <div class="hub-grid">
+          <button class="hub-tile" data-go="timeoff">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3M8 14h8"/></svg></span>
+            <span class="hub-t"><b>Unpaid Time Off</b><span>Approve or deny driver requests, see who's out and each driver's history.</span></span>
+            <span class="hub-badge" id="badgeTimeoff" hidden>0</span>
+          </button>
+          <a class="hub-tile" id="ptoLink" href="#" target="_blank" rel="noopener">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3"/><path d="m8.5 14.5 2.5 2.5 4.5-5"/></svg></span>
+            <span class="hub-t"><b>PTO Approvals</b><span>Opens the PTO manager dashboard in a new tab.</span></span>
+            <span class="hub-ext">Opens ↗</span>
+          </a>
+        </div>
+        <div class="hub-sec">Trailers</div>
+        <div class="hub-grid">
+          <button class="hub-tile" data-go="trailers">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="15" height="10"/><circle cx="6" cy="18" r="2"/><circle cx="13" cy="18" r="2"/><path d="m16 11 2 2 4-4"/></svg></span>
+            <span class="hub-t"><b>Trailer Inspections</b><span>Review inspections, assign techs, work orders, shop reports and the trailer map.</span></span>
+          </button>
+        </div>
+        <div class="hub-sec">Dispatch</div>
+        <div class="hub-grid">
+          <button class="hub-tile" data-go="dispatch">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16"/><path d="M3 9h18M9 9v11M12 13h6M12 16.5h4"/></svg></span>
+            <span class="hub-t"><b>Dispatch Board</b><span>Yard checks by day, trailers on each yard, find a trailer, and driver recruiting.</span></span>
+          </button>
+          <button class="hub-tile" data-go="timesheets">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3M7 13h3M12 13h3M7 17h3"/></svg></span>
+            <span class="hub-t"><b>All Timesheets</b><span>Search and print any driver's synced weekly hours.</span></span>
+          </button>
+          <button class="hub-tile" data-go="fuel">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span>
+            <span class="hub-t"><b>Fuel Prices</b><span>Weekly diesel and gas prices by region, trends, and a summary to share with customers.</span></span>
+          </button>
+        </div>
+        <div class="hub-sign" id="hubSign"></div>
+      </div>
+    </section>
+
+    <!-- TIME OFF -->
+    <section class="screen" id="scrTimeOff" hidden>
+      <div class="wrap narrow" id="toLogin">
+        <div class="card">
+          <div class="card-h">Unpaid Time Off</div>
+          <div class="card-b center">
+            <p class="muted">Enter your time off manager PIN</p>
+            <div class="pin-dots" id="toPinDots"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="keypad" id="toKeypad">
+              <button>1</button><button>2</button><button>3</button>
+              <button>4</button><button>5</button><button>6</button>
+              <button>7</button><button>8</button><button>9</button>
+              <button data-k="clr">CLR</button><button>0</button><button data-k="go" class="kp-go">Enter</button>
+            </div>
+            <div class="pin-err" id="toPinErr"></div>
+          </div>
+        </div>
+        <button class="link-back" data-go="home">← Home</button>
+      </div>
+
+      <div id="toPanel" hidden>
+        <div class="tabs scroll" id="toTabs">
+          <button class="tab active" data-sub="pending">Pending <span class="to-count" id="toPendCount" hidden>0</span></button>
+          <button class="tab" data-sub="upcoming">Who's Out</button>
+          <button class="tab" data-sub="drivers">Drivers</button>
+          <button class="tab" data-sub="all">All Requests</button>
+        </div>
+        <div class="wrap">
+          <div class="to-whobar"><span class="muted" id="toWho"></span><button class="btn outline sm" id="toSignOut">Sign out</button></div>
+          <div class="to-sub" id="toSub-pending"><div id="toPendList"></div></div>
+          <div class="to-sub" id="toSub-upcoming" hidden>
+            <p class="muted">Approved time off for the next 30 days.</p>
+            <div id="toUpList"></div>
+          </div>
+          <div class="to-sub" id="toSub-drivers" hidden>
+            <div class="filters">
+              <div class="f grow"><label class="lbl">Search</label><input type="search" id="toDrvSearch" placeholder="Driver name"></div>
+              <div class="f"><label class="lbl">Year</label><select id="toDrvYear"></select></div>
+              <div class="f f-btns"><button class="btn dark sm" id="toAddDriver">+ Add driver</button></div>
+            </div>
+            <div class="panel">
+              <div class="panel-h"><span>Drivers</span><span class="muted-l">Tap a driver for full history</span></div>
+              <div class="table-wrap">
+                <table class="tbl" id="toDrvTable">
+                  <thead><tr>
+                    <th data-sort="name">Driver</th>
+                    <th data-sort="occ" title="Approved requests">Occ.</th>
+                    <th data-sort="days" title="Approved full days">Days</th>
+                    <th data-sort="hours" title="Approved partial-day hours">Hrs</th>
+                    <th data-sort="r90" title="Approved occurrences, rolling 90 days">90 days</th>
+                    <th data-sort="denied">Denied</th>
+                    <th data-sort="last">Last</th>
+                  </tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+            <p class="muted">Occurrence = one approved request.</p>
+          </div>
+          <div class="to-sub" id="toSub-all" hidden>
+            <div class="filters">
+              <div class="f grow"><label class="lbl">Search</label><input type="search" id="toAllSearch" placeholder="Name, reason, ID"></div>
+              <div class="f"><label class="lbl">Status</label><select id="toAllStatus"><option value="">All statuses</option><option>Pending</option><option>Approved</option><option>Denied</option><option>Cancelled</option></select></div>
+              <div class="f f-btns"><button class="btn dark sm" id="toCsv">Export CSV</button></div>
+            </div>
+            <div id="toAllList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MANAGER: PIN -->
+    <section class="screen" id="scrPin" hidden>
+      <div class="wrap narrow">
+        <div class="card">
+          <div class="card-h">Trailers</div>
+          <div class="card-b center">
+            <p class="muted">Enter the trailer Dashboard PIN</p>
+            <div class="pin-dots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+            <div class="keypad" id="keypad">
+              <button>1</button><button>2</button><button>3</button>
+              <button>4</button><button>5</button><button>6</button>
+              <button>7</button><button>8</button><button>9</button>
+              <button data-k="clr">CLR</button><button>0</button><button data-k="back">⌫</button>
+            </div>
+            <div class="pin-err" id="pinErr"></div>
+          </div>
+        </div>
+        <button class="link-back" data-go="home">← Home</button>
+      </div>
+    </section>
+    <!-- MANAGER: DASHBOARD -->
+    <section class="screen" id="scrMgr" hidden>
+      <div class="tabs scroll" id="mgrTabs">
+        <button class="tab active" data-mtab="insp">Inspections</button>
+        <button class="tab" data-mtab="an">Shop Analytics</button>
+        <button class="tab" data-mtab="dl">Driver &amp; Location</button>
+        <button class="tab" data-mtab="hist">Trailer History</button>
+        <button class="tab" data-mtab="map">Trailer Map</button>
+      </div>
+
+      <!-- Inspections -->
+      <div class="wrap wide mview" id="mvInsp">
+        <div class="kpis">
+          <div class="kpi"><b id="kTotal">--</b><span>Total inspections</span></div>
+          <div class="kpi red"><b id="kDefects">--</b><span>With defects</span></div>
+          <div class="kpi amber"><b id="kPending">--</b><span>Pending review</span></div>
+          <div class="kpi green"><b id="kWeek">--</b><span>This week</span></div>
+        </div>
+        <div class="filters">
+          <div class="f"><label class="lbl">Search</label><input id="fSearch" placeholder="Driver, trailer, location, defect…"></div>
+          <div class="f"><label class="lbl">Status</label><select id="fStatus"><option value="">All statuses</option></select></div>
+          <div class="f"><label class="lbl">Defects</label><select id="fDefects"><option value="">All</option><option value="yes">Has defects</option><option value="no">Clear</option></select></div>
+          <div class="f"><label class="lbl">From</label><input type="date" id="fFrom"></div>
+          <div class="f"><label class="lbl">To</label><input type="date" id="fTo"></div>
+          <div class="f f-btns"><button class="btn outline sm" id="fClear">Clear</button><button class="btn dark sm" id="fCsv">Export CSV</button></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><span>Inspection records</span><span class="muted-l" id="rowCount">--</span></div>
+          <div class="table-wrap">
+            <table class="tbl" id="inspTable">
+              <thead><tr>
+                <th data-sort="date">Date</th><th data-sort="driver">Driver</th><th data-sort="trailer">Trailer</th>
+                <th>Location</th><th>Defects</th><th data-sort="status">Status</th><th>Assigned tech</th><th>GPS</th><th>WO #</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shop analytics -->
+      <div class="wrap wide mview" id="mvAn" hidden>
+        <div class="filters">
+          <div class="f"><label class="lbl">From</label><input type="date" id="anFrom"></div>
+          <div class="f"><label class="lbl">To</label><input type="date" id="anTo"></div>
+          <div class="f"><label class="lbl">Tech</label><select id="anTech"><option value="">All techs</option></select></div>
+          <div class="f f-btns"><button class="btn red sm" id="anRun">Run report</button><button class="btn dark sm" id="anCsv">Export CSV</button></div>
+        </div>
+        <div class="kpis six">
+          <div class="kpi"><b id="anTotal">--</b><span>Total jobs</span></div>
+          <div class="kpi green"><b id="anDone">--</b><span>Completed</span></div>
+          <div class="kpi amber"><b id="anIp">--</b><span>In progress</span></div>
+          <div class="kpi"><b id="anHours">--</b><span>Total labor hours</span></div>
+          <div class="kpi"><b id="anAvg">--</b><span>Avg time per job</span></div>
+          <div class="kpi red"><b id="anOpen">--</b><span>Open / pending</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><span>Labor hours by tech</span></div>
+          <div class="table-wrap"><table class="tbl"><thead><tr><th>Tech</th><th>Jobs</th><th>Completed</th><th>Total hours</th><th>Avg per job</th><th class="w-bar">Workload</th></tr></thead><tbody id="anTechBody"><tr><td colspan="6" class="empty-cell">Run a report to load data.</td></tr></tbody></table></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><span>Repair sessions</span><span class="muted-l" id="anCount"></span></div>
+          <div class="table-wrap"><table class="tbl"><thead><tr><th>WO #</th><th>Tech</th><th>Trailer</th><th>Location</th><th>Started</th><th>Ended</th><th>Time</th><th>Parts</th><th>Status</th><th>Start GPS</th><th>End GPS</th></tr></thead><tbody id="anSessBody"><tr><td colspan="11" class="empty-cell">Run a report to load data.</td></tr></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- Driver & location -->
+      <div class="wrap wide mview" id="mvDl" hidden>
+        <div class="filters">
+          <div class="f"><label class="lbl">From</label><input type="date" id="dlFrom"></div>
+          <div class="f"><label class="lbl">To</label><input type="date" id="dlTo"></div>
+          <div class="f"><label class="lbl">Quick range</label><select id="dlQuick"><option value="10">Last 10 days</option><option value="30" selected>Last 30 days</option><option value="60">Last 60 days</option><option value="90">Last 90 days</option><option value="0">All time</option></select></div>
+          <div class="f f-btns"><button class="btn red sm" id="dlRun">Run report</button><button class="btn dark sm" id="dlCsv">Export CSV</button></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><b id="dlTotal">--</b><span>Inspections in range</span></div>
+          <div class="kpi green"><b id="dlActive">--</b><span>Active drivers</span></div>
+          <div class="kpi red"><b id="dlInactive">--</b><span>Inactive (&gt;10 days)</span></div>
+          <div class="kpi amber"><b id="dlHot" class="kpi-text">--</b><span>Top defect location</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><span>Driver inspection activity</span><span class="muted-l">Sorted by last submission</span></div>
+          <div class="table-wrap"><table class="tbl"><thead><tr><th>Driver</th><th>Inspections</th><th>Last submission</th><th>Days since</th><th>Avg days between</th><th>Defects</th><th>Defect rate</th><th class="w-bar">Activity</th><th>Status</th></tr></thead><tbody id="dlDriverBody"><tr><td colspan="9" class="empty-cell">Run a report to load driver data.</td></tr></tbody></table></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><span>Location defect hotspots</span><span class="muted-l">Ranked by defect count</span></div>
+          <div class="table-wrap"><table class="tbl"><thead><tr><th>Rank</th><th>Location</th><th>Inspections</th><th>With defects</th><th>Defect items</th><th>Defect rate</th><th>Top defect</th><th class="w-bar">Volume</th></tr></thead><tbody id="dlLocBody"><tr><td colspan="8" class="empty-cell">Run a report to load location data.</td></tr></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- Trailer history -->
+      <div class="wrap wide mview" id="mvHist" hidden>
+        <div class="filters">
+          <div class="f grow"><label class="lbl">Trailer number</label><input id="histInput" placeholder="e.g. T-1042"></div>
+          <div class="f f-btns"><button class="btn red sm" id="histGo">Search</button></div>
+        </div>
+        <div id="histBody"><div class="empty">Enter a trailer number to see its full inspection and repair history.</div></div>
+      </div>
+
+      <!-- Map -->
+      <div class="wrap wide mview" id="mvMap" hidden>
+        <div class="map-head">
+          <div><b>Live trailer positions</b> <span class="muted-l" id="mapCount">—</span></div>
+          <div class="map-actions">
+            <div class="seg2"><button class="on" id="mapViewMap">Map</button><button id="mapViewSum">Summary</button></div>
+            <span class="muted-l" id="mapRefreshed"></span>
+            <button class="btn red sm" id="mapRefresh">⟳ Refresh</button>
+          </div>
+        </div>
+        <div class="filters slim">
+          <div class="f grow"><input id="mapSearch" placeholder="Search trailer number or location…"></div>
+          <div class="f"><select id="mapFilter"><option value="all">All trailers</option><option value="moving">Moving</option><option value="parked">Parked</option><option value="recent">Recent (&lt;2h)</option><option value="stale">Stale (&gt;1 day)</option></select></div>
+          <div class="f f-btns"><button class="btn outline sm" id="mapClear" hidden>✕ Clear</button></div>
+        </div>
+        <div class="alert" id="mapErr" hidden></div>
+        <div id="mapBox"></div>
+        <div id="mapList"></div>
+        <div id="mapSummary" hidden></div>
+      </div>
+    </section>
+    <section id="yardBoard" class="screen tk" hidden>
+      <div class="wrap wide">
+      <div class="card">
+        <h2 style="margin-top:0">Dispatch Board</h2>
+        <form id="ybFindForm" class="yb-find" role="search" autocomplete="off">
+          <input id="ybFindInput" type="search" inputmode="text" autocapitalize="characters" placeholder="Find a trailer — e.g. 514180 or 4180" aria-label="Find a trailer by number" />
+          <button type="submit">Find</button>
+        </form>
+        <div class="segmented" id="ybTabs" style="margin-bottom:12px"><button type="button" class="seg active" data-ybtab="day">Day</button><button type="button" class="seg" data-ybtab="yards">Yards Now</button><button type="button" class="seg" data-ybtab="recruit">Recruiting</button></div>
+        <div id="ybDayCtl">
+          <p class="hint">Everything drivers sent in for one day: every yard check, plus any earlier status updates.</p>
+          <div class="yb-daybar"><button type="button" id="ybPrev" class="ghost" aria-label="Previous day">‹</button><input id="ybDate" type="date" aria-label="Day" /><button type="button" id="ybNext" class="ghost" aria-label="Next day">›</button><button type="button" id="ybToday" class="ghost">Today</button></div>
+          <label>Driver<select id="ybDriver"><option value="">All drivers</option></select></label>
+        </div>
+        <div id="ybYardCtl" hidden>
+          <p class="hint">Latest yard check for each yard. "On yard" counts back through earlier checks — if a trailer was missed on one check, its count starts over.</p>
+          <div class="grid-2">
+            <label>Search<input id="ybSearch" placeholder="Yard, trailer #, or product" autocomplete="off" /></label>
+            <label>Show<select id="ybMinDays"><option value="0">All trailers</option><option value="3">3+ days on yard</option><option value="7">7+ days on yard</option><option value="14">14+ days on yard</option><option value="-1">Damaged only</option></select></label>
+          </div>
+        </div>
+        <div class="actions"><button type="button" id="ybLoad">Refresh</button><button type="button" id="ybCsv" class="ghost">Export CSV</button></div>
+        <p id="ybStatus" class="hint">Loads automatically when opened.</p>
+      </div>
+      <div id="ybFind" hidden></div>
+      <div id="ybResults"></div>
+      </div>
+    </section>
+    <section id="spotterTimesheets" class="screen tk" hidden>
+      <div class="wrap wide">
+      <div class="tool-layout wide">
+        <form class="panel no-print" id="spotterTimesheetsForm" onsubmit="return false">
+          <h2>All Timesheets</h2>
+          <p class="hint">Weekly hours synced from every driver's Weekly Timesheet tool. Search by driver name, location, or week (YYYY-MM-DD of the Sunday).</p>
+          <label>Search<input id="stSearch" placeholder="Driver name, location, or week start date..." autocomplete="off" /></label>
+          <div class="grid-2"><button type="button" id="stSearchBtn">Search</button><button type="button" id="stLoadBtn" class="ghost">Load / Refresh Data</button></div>
+          <button type="button" id="stClearBtn" class="ghost" style="margin-top:8px;width:100%">Clear</button>
+          <div class="grid-2" style="margin-top:8px"><button type="button" id="stCsvBtn" class="ghost">Export CSV</button><button type="button" id="stPrintBtn" class="ghost">Print Table</button></div>
+          <div id="stStatus" class="hint">Timesheets not loaded yet — searching will load them automatically.</div>
+        </form>
+        <div><div id="stResults" class="results no-print"></div></div>
+      </div>
+      <div id="stPrintTable" class="print-area"></div>
+      </div>
+    </section>
+    <section id="fuelboard" class="screen tk" hidden>
+      <div class="wrap wide">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <h2 style="margin:0">Fuel Price Board</h2>
+          <button type="button" id="fbRefresh" class="ghost">Refresh</button>
+        </div>
+        <div class="segmented" style="margin-top:14px">
+          <button type="button" class="seg active" data-fbprod="diesel">Diesel</button>
+          <button type="button" class="seg" data-fbprod="gas">Gasoline</button>
+        </div>
+        <p id="fbStatus" class="hint"></p>
+        <h3 id="fbHeading" style="margin-bottom:2px">U.S. On-Highway Diesel Prices (dollars per gallon)</h3>
+        <p id="fbWeekOf" class="hint" style="margin-top:0"></p>
+        <div class="fb-table-wrap" id="fbTable"></div>
+        <p class="hint fb-phone-note">Showing this week on your phone — turn it sideways or open on a computer for the full 3-week table. Swipe the table for more columns.</p>
+        <p id="fbFscNote" class="hint" hidden></p>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <h3 style="margin:0">Price Trend</h3>
+          <div class="segmented fb-range" style="margin:0">
+            <button type="button" class="seg" data-fbrange="13">3 Mo</button>
+            <button type="button" class="seg active" data-fbrange="52">1 Yr</button>
+            <button type="button" class="seg" data-fbrange="104">2 Yr</button>
+          </div>
+        </div>
+        <div id="fbChart" style="margin-top:12px"></div>
+        <p class="hint" style="margin-bottom:6px">Tap regions to show or hide them. The ones you pick are also used in the customer summary below.</p>
+        <div id="fbLegend" class="fb-legend"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3 style="margin-top:0">Share With a Customer</h3>
+        <label id="fbFscWrap" class="fb-check"><input id="fbIncludeFsc" type="checkbox" checked /> Include fuel surcharge per mile</label>
+        <pre id="fbSummary" class="fb-summary"></pre>
+        <div class="actions"><button type="button" id="fbShare">Share</button><button type="button" id="fbCopy" class="ghost">Copy</button></div>
+        <p class="hint">Source: U.S. Energy Information Administration, Gasoline and Diesel Fuel Update.</p>
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="toModal" class="tm-modal">
+    <div class="tm-modal-h"><b id="toModalTitle"></b><button class="tb-btn" id="toModalClose" aria-label="Close">✕</button></div>
+    <div class="tm-modal-b" id="toModalBody"></div>
+  </dialog>
+
+  <div class="install-modal" id="installHelp" hidden>
+    <div class="install-card">
+      <div class="card-h">Install the Manager app</div>
+      <div class="card-b">
+        <p>Put it on your home screen so it opens like any other app.</p>
+        <ol id="installIos" hidden><li>Open this page in <b>Safari</b>.</li><li>Tap <b>Share</b> at the bottom of the screen.</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li></ol>
+        <ol id="installOther" hidden><li>Open this page in <b>Chrome</b> or <b>Edge</b>.</li><li>Tap the <b>⋮</b> menu.</li><li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li></ol>
+        <button class="btn red block" id="installClose">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inspection detail drawer -->
+  <div class="drawer-shade" id="drawerShade" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-h">
+      <div><b id="dTitle">Trailer</b><span id="dSub"></span></div>
+      <button class="tb-btn" id="dClose" aria-label="Close">✕</button>
+    </div>
+    <div class="drawer-b" id="dBody"></div>
+  </aside>
+
+  <!-- Work order viewer -->
+  <div class="docview" id="docView" hidden>
+    <div class="docbar">
+      <b id="docTitle">Work order</b>
+      <div><button class="btn red sm" id="docPrint">Print / Save PDF</button><button class="btn outline-light sm" id="docClose">Close</button></div>
+    </div>
+    <iframe id="docFrame" title="Work order"></iframe>
+  </div>
+  <div class="toast" id="toast" hidden></div>
+  <div class="busy" id="busy" hidden><div class="spinner"></div><div id="busyMsg">Loading…</div></div>
+
+  <script src="config.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/compat.js"></script>
+  <script src="js/timeoff.js"></script>
+  <script src="js/mgr.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/yardboard.js"></script>
+  <script src="js/recruitboard.js"></script>
+  <script src="js/spottertimesheets.js"></script>
+  <script src="js/fuelboard.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
