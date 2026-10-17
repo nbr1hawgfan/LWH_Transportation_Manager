@@ -34,10 +34,20 @@
   const fmtLong=iso=>toDate(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 
   // ---------- Data ----------
+  // EIA's server sometimes errors (HTTP 500) on the big 2-year request: retry
+  // once, then fall back to ~14 months, which still fills the table and 1-year chart.
   async function fetchProduct(prod){
+    let last;
+    for(const [days,wait] of [[2*365+35,0],[2*365+35,1500],[425,800]]){
+      if(wait) await new Promise(r=>setTimeout(r,wait));
+      try{ return await fetchRange(prod,days); }catch(e){ last=e; if(e.message==='NO_KEY'||e.message==='No data returned') throw e; }
+    }
+    throw last;
+  }
+  async function fetchRange(prod,days){
     const key=(window.LWHEIA&&LWHEIA.key)||'';
     if(!key) throw new Error('NO_KEY');
-    const start=new Date(Date.now()-(2*365+35)*DAY).toISOString().slice(0,10);
+    const start=new Date(Date.now()-days*DAY).toISOString().slice(0,10);
     let url='https://api.eia.gov/v2/petroleum/pri/gnd/data/?api_key='+encodeURIComponent(key)+
       '&frequency=weekly&data[0]=value&start='+start+
       '&sort[0][column]=period&sort[0][direction]=asc&offset=0&length=5000';
@@ -72,7 +82,7 @@
     }catch(e){
       if(e.message==='NO_KEY'){ status.textContent='Add your EIA API key in js/eia.js to turn on the price board.'; return; }
       console.error('Fuel board fetch failed',e);
-      status.textContent=c?`Couldn't reach EIA — showing prices saved ${new Date(c.at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}.`:'Couldn\'t reach EIA right now. Try Refresh in a minute.';
+      status.textContent=c?`Couldn't reach EIA — showing prices saved ${new Date(c.at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}.`:(/HTTP 5/.test(e.message)?'EIA\'s price server is having trouble right now ('+e.message+'). This is on their end — try Refresh in a few minutes.':'Couldn\'t reach EIA right now. Try Refresh in a minute.');
     }
   }
 
@@ -124,7 +134,7 @@
         <tr><th scope="col">Region</th>${weeks.map((w,i)=>`<th scope="col" class="fb-num${i<2?' fb-wide':''}">${fmtShort(w)}</th>`).join('')}<th scope="col" class="fb-num fb-wide">2 yr ago</th><th scope="col" class="fb-num">Year ago</th><th scope="col" class="fb-num">Week ago</th>${showFsc?'<th scope="col" class="fb-num">Per mile</th>':''}</tr>
       </thead><tbody>${rows}</tbody></table>`;
     el('fbFscNote').hidden=!showFsc;
-    el('fbFscNote').textContent=`Surcharge per mile figured at ${money(base,2)} base, ${mpg} MPG.`;
+    el('fbFscNote').textContent=`Surcharge per mile uses the Fuel Surcharge settings: ${money(base,2)} base, ${mpg} MPG.`;
   }
 
   // ---------- Chart (plain SVG, works offline) ----------

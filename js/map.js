@@ -2,26 +2,44 @@
 window.TSMap = (function () {
   'use strict';
   const { $, mgr, toast, esc, setBusyBtn } = TS;
-  const st = { map: null, markers: [], all: [], sorted: [], loaded: false, summary: false };
+  const st = { map: null, layer: null, markers: [], all: [], sorted: [], loaded: false, summary: false };
   const LEAFLET_CSS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
   const LEAFLET_JS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+  // Groups trailers that are close together into one numbered square; tap it to spread them out.
+  const CLUSTER_CSS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css';
+  const CLUSTER_JS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js';
 
   const minsAgo = t => t.lastSeen ? (Date.now() - new Date(t.lastSeen).getTime()) / 60000 : Infinity;
   function color(t) { const m = minsAgo(t); return m > 10080 ? '#95A5A6' : m > 1440 ? '#c8102e' : m > 120 ? '#E67E22' : m > 30 ? '#F1C40F' : '#1e7b34'; }
 
-  function loadLeaflet() {
-    return new Promise((res, rej) => {
-      if (window.L) return res();
-      if (!document.querySelector('link[data-leaflet]')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = LEAFLET_CSS; l.dataset.leaflet = '1'; document.head.appendChild(l); }
-      const s = document.createElement('script'); s.src = LEAFLET_JS; s.onload = () => res(); s.onerror = () => rej(new Error('The map library failed to load.'));
-      document.head.appendChild(s);
-    });
+  function css(href) { if (!document.querySelector(`link[href="${href}"]`)) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; document.head.appendChild(l); } }
+  function script(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = () => res(); s.onerror = () => rej(new Error('The map library failed to load.')); document.head.appendChild(s); }); }
+  async function loadLeaflet() {
+    css(LEAFLET_CSS);
+    if (!window.L) await script(LEAFLET_JS);
+    if (!L.markerClusterGroup) { css(CLUSTER_CSS); try { await script(CLUSTER_JS); } catch (e) { /* falls back to plain pins */ } }
+  }
+  // Teardrop pin in the freshness color, with the trailer number beside it
+  function pinIcon(t) {
+    const c = color(t), moving = t.speed > 1;
+    return L.divIcon({ className: 'tm-pin', iconSize: [22, 30], iconAnchor: [11, 29], popupAnchor: [0, -26],
+      html: `<svg viewBox="0 0 22 30" width="22" height="30"><path d="M11 1C5.5 1 1 5.4 1 10.9 1 18.3 11 29 11 29s10-10.7 10-18.1C21 5.4 16.5 1 11 1z" fill="${c}" stroke="#111" stroke-width="1.5"/><circle cx="11" cy="11" r="${moving ? 4.5 : 3.5}" fill="#fff"/>${moving ? '<path d="M9.3 8.6v4.8l4-2.4z" fill="' + c + '"/>' : ''}</svg>` +
+        `<span class="tm-pin-lbl">${esc(String(t.name || ''))}</span>` });
+  }
+  function clusterIcon(cluster) {
+    const n = cluster.getChildCount();
+    const size = n < 10 ? 34 : n < 50 ? 40 : 46;
+    return L.divIcon({ className: 'tm-cluster', iconSize: [size, size], html: `<div style="width:${size}px;height:${size}px">${n}</div>` });
   }
   async function open() {
     try { await loadLeaflet(); } catch (e) { return showErr(e.message); }
     if (!st.map) {
       st.map = L.map('mapBox').setView([35.385, -94.398], 11);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(st.map);
+      st.layer = L.markerClusterGroup
+        ? L.markerClusterGroup({ maxClusterRadius: 45, showCoverageOnHover: false, spiderfyOnMaxZoom: true, disableClusteringAtZoom: 17, iconCreateFunction: clusterIcon })
+        : L.layerGroup();
+      st.layer.addTo(st.map);
     }
     if (!st.loaded) load();
     setTimeout(() => st.map && st.map.invalidateSize(), 150);
@@ -40,22 +58,21 @@ window.TSMap = (function () {
   }
   function draw(trailers) {
     if (!st.map) return;
-    st.markers.forEach(m => st.map.removeLayer(m)); st.markers = [];
+    st.layer.clearLayers(); st.markers = [];
     $('mapCount').textContent = trailers.length + ' trailer' + (trailers.length === 1 ? '' : 's') + ' tracked';
     $('mapSearch').value = ''; $('mapFilter').value = 'all'; $('mapClear').hidden = true;
     const bounds = [];
     trailers.forEach(t => {
       if (!t.lat || !t.lng) return;
-      const label = esc(String(t.name || '').slice(0, 6));
-      const icon = L.divIcon({ className: '', iconSize: [34, 34], iconAnchor: [17, 17], popupAnchor: [0, -18],
-        html: `<div style="background:${color(t)};color:#fff;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font:800 9px/1.1 Arial;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);text-align:center">${label}</div>` });
+      const icon = pinIcon(t);
       const pop = `<div style="font-family:Arial;min-width:180px"><div style="font-weight:800;font-size:14px;margin-bottom:6px">Trailer ${esc(t.name)}</div>
         <div style="font-size:12px"><b>Location:</b> ${esc(t.address || 'Unknown')}</div><div style="font-size:12px"><b>Last seen:</b> ${esc(t.freshness)}</div>
         <div style="font-size:12px"><b>Speed:</b> ${t.speed || 0} mph</div>
         <a href="https://maps.apple.com/?ll=${t.lat},${t.lng}&q=Trailer+${encodeURIComponent(t.name)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;background:#111;color:#fff;padding:5px 10px;text-decoration:none;font-size:11px;font-weight:800">VIEW ON MAPS</a></div>`;
-      const m = L.marker([t.lat, t.lng], { icon }).bindPopup(pop).addTo(st.map);
+      const m = L.marker([t.lat, t.lng], { icon, title: 'Trailer ' + (t.name || '') }).bindPopup(pop);
       m._t = t; st.markers.push(m); bounds.push([t.lat, t.lng]);
     });
+    if (st.layer.addLayers) st.layer.addLayers(st.markers); else st.markers.forEach(m => st.layer.addLayer(m));
     if (bounds.length) st.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
     list(trailers);
     if (st.summary) summary(trailers);
@@ -82,15 +99,18 @@ window.TSMap = (function () {
     $('mapClear').hidden = !(q || s !== 'all');
     const f = st.all.filter(t => matches(t, q, s));
     $('mapCount').textContent = f.length + ' of ' + st.all.length + ' trailers';
-    st.markers.forEach(m => { const on = matches(m._t, q, s); if (on && !st.map.hasLayer(m)) st.map.addLayer(m); if (!on && st.map.hasLayer(m)) st.map.removeLayer(m); });
+    st.layer.clearLayers();
+    const on = st.markers.filter(m => matches(m._t, q, s));
+    if (st.layer.addLayers) st.layer.addLayers(on); else on.forEach(m => st.layer.addLayer(m));
     list(f);
     if (f.length && f.length <= 10) { const b = f.filter(t => t.lat && t.lng).map(t => [t.lat, t.lng]); if (b.length) st.map.fitBounds(b, { padding: [40, 40], maxZoom: 15 }); }
   }
   function fly(i) {
     const t = st.sorted[i]; if (!t || !t.lat) return;
     window.scrollTo({ top: $('mapBox').offsetTop - 120, behavior: 'smooth' });
-    st.map.flyTo([t.lat, t.lng], 15, { duration: 1.1 });
-    st.markers.forEach(m => { const p = m.getLatLng(); if (Math.abs(p.lat - t.lat) < 1e-4 && Math.abs(p.lng - t.lng) < 1e-4) m.openPopup(); });
+    const m = st.markers.find(x => x._t === t);
+    if (m && st.layer.hasLayer(m) && st.layer.zoomToShowLayer) { st.map.setView([t.lat, t.lng], Math.max(st.map.getZoom(), 13)); st.layer.zoomToShowLayer(m, () => m.openPopup()); }
+    else { st.map.flyTo([t.lat, t.lng], 15, { duration: 1.1 }); if (m) setTimeout(() => m.openPopup(), 1200); }
   }
   function city(addr) {
     if (!addr) return '';

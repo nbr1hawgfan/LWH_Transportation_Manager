@@ -12,10 +12,11 @@ window.TMApp = (function () {
     trailers:   { id: 'scrMgr',            title: 'Trailer Inspections' },
     dispatch:   { id: 'yardBoard',         title: 'Dispatch Board' },
     timesheets: { id: 'spotterTimesheets', title: 'All Timesheets' },
-    fuel:       { id: 'fuelboard',         title: 'Fuel Prices' }
+    fuel:       { id: 'fuelboard',         title: 'Fuel Prices' },
+    surcharge:  { id: 'fsc',               title: 'Fuel Surcharge' }
   };
   // Toolkit view names → ours (the copied Toolkit files call LWHUI.show)
-  const ALIAS = { yardBoard: 'dispatch', spotterTimesheets: 'timesheets', fuelboard: 'fuel', home: 'home' };
+  const ALIAS = { yardBoard: 'dispatch', spotterTimesheets: 'timesheets', fuelboard: 'fuel', fsc: 'surcharge', home: 'home' };
 
   /* ---------- trailer sign-in (Dashboard PIN, kept 8 hours on this device) ---------- */
   function loadTrailer() {
@@ -99,6 +100,7 @@ window.TMApp = (function () {
     if (current === 'dispatch') return $('ybLoad').click();
     if (current === 'timesheets') return $('stLoadBtn').click();
     if (current === 'fuel') return $('fbRefresh').click();
+    if (current === 'surcharge') return $('fscRefresh').click();
     refreshHub();
   }
 
@@ -147,7 +149,9 @@ window.TMApp = (function () {
   $('installClose').onclick = () => { $('installHelp').hidden = true; };
 
   /* ---------- wiring ---------- */
-  $('ptoLink').href = CFG.PTO_MANAGER_URL || '#';
+  // Links are also written into index.html, so they work even if an older config.js is cached
+  if (CFG.PTO_MANAGER_URL) $('ptoLink').href = CFG.PTO_MANAGER_URL;
+  if (CFG.TRACKING_URL) $('trackLink').href = CFG.TRACKING_URL;
   document.addEventListener('click', e => {
     const g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); open(g.dataset.go); return; }
     const s = e.target.closest('[data-signout]');

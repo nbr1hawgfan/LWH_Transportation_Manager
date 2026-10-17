@@ -11,6 +11,7 @@ One installable app (PWA) with everything a transportation manager needs. Driver
 | **Dispatch Board** | Moved from the Driver Toolkit: yard checks by day, Yards Now, Find a trailer, Recruiting | None (Recruiting credits still need the recruiting passcode) |
 | **All Timesheets** | Moved from the Driver Toolkit | None |
 | **Fuel Prices** | Moved from the Driver Toolkit | None |
+| **Fuel Surcharge** | The Toolkit's surcharge calculator (OOIDA method) with this week's EIA diesel price | None |
 
 A red number on the Unpaid Time Off tile shows how many requests are waiting.
 

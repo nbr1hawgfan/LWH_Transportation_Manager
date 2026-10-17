@@ -45,9 +45,14 @@
             <span class="hub-t"><b>Unpaid Time Off</b><span>Approve or deny driver requests, see who's out and each driver's history.</span></span>
             <span class="hub-badge" id="badgeTimeoff" hidden>0</span>
           </button>
-          <a class="hub-tile" id="ptoLink" href="#" target="_blank" rel="noopener">
+          <a class="hub-tile" id="ptoLink" href="https://script.google.com/a/macros/logisticswarehouse.net/s/AKfycbwXblseav0VCgynTXxL6BYTLniZ4xJAiYholbDgnFPXBqL46_sxP1Rc49MWMga52QsV/exec?page=manager" target="_blank" rel="noopener">
             <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3"/><path d="m8.5 14.5 2.5 2.5 4.5-5"/></svg></span>
             <span class="hub-t"><b>PTO Approvals</b><span>Opens the PTO manager dashboard in a new tab.</span></span>
+            <span class="hub-ext">Opens ↗</span>
+          </a>
+          <a class="hub-tile" id="trackLink" href="https://nbr1hawgfan.github.io/LWH_Driver-and-Trailer-Tracking/" target="_blank" rel="noopener">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>
+            <span class="hub-t"><b>Driver &amp; Trailer Tracking</b><span>Opens the driver and trailer tracking app in a new tab.</span></span>
             <span class="hub-ext">Opens ↗</span>
           </a>
         </div>
@@ -57,11 +62,6 @@
             <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="15" height="10"/><circle cx="6" cy="18" r="2"/><circle cx="13" cy="18" r="2"/><path d="m16 11 2 2 4-4"/></svg></span>
             <span class="hub-t"><b>Trailer Inspections</b><span>Review inspections, assign techs, work orders, shop reports and the trailer map.</span></span>
           </button>
-          <a class="hub-tile" id="trackLink" href="#" target="_blank" rel="noopener">
-            <span class="hub-ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>
-            <span class="hub-t"><b>Driver &amp; Trailer Tracking</b><span>Opens the driver and trailer tracking app in a new tab.</span></span>
-            <span class="hub-ext">Opens ↗</span>
-          </a>
         </div>
         <div class="hub-sec">Dispatch</div>
         <div class="hub-grid">
@@ -76,6 +76,10 @@
           <button class="hub-tile" data-go="fuel">
             <span class="hub-ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span>
             <span class="hub-t"><b>Fuel Prices</b><span>Weekly diesel and gas prices by region, trends, and a summary to share with customers.</span></span>
+          </button>
+          <button class="hub-tile" data-go="surcharge">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15M4 11h10M14 9h2.5L19 12v5a1 1 0 0 1-1 1h-1M17 3l3 3M20 3l-3 3"/></svg></span>
+            <span class="hub-t"><b>Fuel Surcharge</b><span>Surcharge per mile and per trip from this week's diesel price, your base price and MPG.</span></span>
           </button>
         </div>
         <div class="hub-sign" id="hubSign"></div>
@@ -380,6 +384,28 @@
       </div>
       </div>
     </section>
+    <section id="fsc" class="screen tk" hidden>
+      <div class="wrap wide">
+      <div class="tool-layout">
+        <div class="panel">
+          <h2>Fuel Surcharge Calculator</h2>
+          <p class="hint">OOIDA method: (current diesel price − base price) ÷ MPG = surcharge per mile. Your numbers are remembered on this device — usually you only need to update the diesel price each week.</p>
+          <label>Price region<select id="fscRegion"><option value="R20">Midwest (PADD 2)</option><option value="R30">Gulf Coast (PADD 3)</option><option value="NUS">U.S. Average</option><option value="R10">East Coast (PADD 1)</option><option value="R40">Rocky Mountain (PADD 4)</option><option value="R50">West Coast (PADD 5)</option></select></label>
+          <label>Current diesel price ($/gallon)<input id="fscCurrent" type="number" inputmode="decimal" min="0" step="0.001" placeholder="e.g. 3.759" /></label>
+          <p id="fscPriceSource" class="hint" style="margin-top:-6px">Loading this week's EIA average…</p>
+          <div class="actions" style="margin-top:-6px"><button type="button" id="fscRefresh" class="ghost">Use This Week's EIA Price</button></div>
+          <p class="hint" style="margin-top:-6px">Source: <a href="https://www.eia.gov/petroleum/gasdiesel/" target="_blank" rel="noopener">EIA weekly retail diesel</a>, published Mondays. You can still type your own price over it.</p>
+          <label>Base / peg price ($/gallon)<input id="fscBase" type="number" inputmode="decimal" min="0" step="0.01" /></label>
+          <p class="hint" style="margin-top:-6px">The price where surcharge starts — use the base in your rate agreement.</p>
+          <label>Truck MPG<input id="fscMpg" type="number" inputmode="decimal" min="0.1" step="0.1" /></label>
+          <label>Loaded miles (optional)<input id="fscMiles" type="number" inputmode="numeric" min="0" step="1" /></label>
+          <label>Linehaul rate $/mile (optional)<input id="fscLinehaul" type="number" inputmode="decimal" min="0" step="0.01" placeholder="e.g. 2.25" /></label>
+          <div class="actions"><button type="button" id="fscCalc">Calculate</button><button type="button" id="fscReset" class="ghost">Reset</button></div>
+        </div>
+        <div class="card" id="fscOutput"><p class="hint">Enter the current diesel price, base price, and MPG.</p></div>
+      </div>
+      </div>
+    </section>
   </main>
 
   <dialog id="toModal" class="tm-modal">
@@ -431,6 +457,7 @@
   <script src="js/recruitboard.js"></script>
   <script src="js/spottertimesheets.js"></script>
   <script src="js/fuelboard.js"></script>
+  <script src="js/fsc.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
