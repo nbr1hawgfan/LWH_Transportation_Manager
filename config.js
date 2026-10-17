@@ -5,7 +5,10 @@ window.TM_CONFIG = {
   UTO_API_URL: 'https://script.google.com/macros/s/AKfycbxz1Jp44C5vJnn1EPSkgaxwf3Vn96l_ctgjTXNgYKFj4jTU89nuJMZ4RuWtxt7SWKa5Kg/exec',
 
   // PTO approvals stay in the existing PTO system; this button opens it.
-  PTO_MANAGER_URL: 'https://script.google.com/a/macros/logisticswarehouse.net/s/AKfycbwXblseav0VCgynTXxL6BYTLniZ4xJAiYholbDgnFPXBqL46_sxP1Rc49MWMga52QsV/exec?page=manager'
+  PTO_MANAGER_URL: 'https://script.google.com/a/macros/logisticswarehouse.net/s/AKfycbwXblseav0VCgynTXxL6BYTLniZ4xJAiYholbDgnFPXBqL46_sxP1Rc49MWMga52QsV/exec?page=manager',
+
+  // Driver & Trailer Tracking app (opens in a new tab)
+  TRACKING_URL: 'https://nbr1hawgfan.github.io/LWH_Driver-and-Trailer-Tracking/'
 };
 
 // Trailers — the Trailer Defect Inspection web app (Code.gs + Api.gs +
