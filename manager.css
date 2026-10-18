@@ -218,3 +218,7 @@
 .tm-cluster { background: none; border: 0; }
 .tm-cluster div { display: grid; place-items: center; background: #111; color: #fff; border: 3px solid var(--red); font: 900 14px/1 Arial, sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,.4); cursor: pointer; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { border-radius: 0 !important; }
+
+/* ---------- Shop dashboard: full width on desktop monitors (Oct 2026) ---------- */
+#scrMgr .wrap.wide { max-width: none; padding: 16px 24px; }
+@media (max-width: 600px) { #scrMgr .wrap.wide { padding: 12px; } }
