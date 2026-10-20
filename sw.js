@@ -1,5 +1,5 @@
 // Bump VERSION when you push changes so phones pick up new files.
-const VERSION = 'tm-v1.0.6';
+const VERSION = 'tm-v1.0.7';
 const SHELL = ['./', 'index.html', 'styles.css', 'manager.css', 'config.js', 'manifest.json',
   'js/core.js', 'js/compat.js', 'js/timeoff.js', 'js/mgr.js', 'js/reports.js', 'js/map.js',
   'js/yardboard.js', 'js/recruitboard.js', 'js/spottertimesheets.js', 'js/fuelboard.js', 'js/fsc.js', 'js/app.js',
