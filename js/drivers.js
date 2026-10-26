@@ -65,7 +65,7 @@ window.TMDrivers = (function () {
     const q = $('drvSearch').value.trim().toLowerCase(), fs = $('drvFStatus').value, fl = $('drvFLoc').value, ft = $('drvFType').value;
     return st.rows.filter(d => (!fs || d.status === fs) && (!fl || d.location === fl) &&
       (!ft || (ft === 'Manager' ? d.role !== 'Driver' : d.truck_type === ft)) &&
-      (!q || (d.name + ' ' + d.driver_id).toLowerCase().includes(q)));
+      (!q || (d.name + ' ' + (d.goes_by || '') + ' ' + d.driver_id).toLowerCase().includes(q)));
   }
   const fmtDate = s => { if (!s) return '—'; const [y, m, d] = s.split('-'); return +m + '/' + +d + '/' + y; };
   function render() {
@@ -81,7 +81,7 @@ window.TMDrivers = (function () {
     $('drvCount').textContent = rows.length + ' of ' + st.rows.length;
     $('drvTable').querySelector('tbody').innerHTML = rows.length ? rows.map(d => `
       <tr class="click${d.status === 'Inactive' ? ' drv-inactive' : ''}" data-id="${esc(d.id)}">
-        <td><b>${esc(d.name)}</b>${d.role !== 'Driver' ? ` <span class="badge b-Reviewed">${esc(d.role)}</span>` : ''}</td>
+        <td><b>${esc(d.name)}</b>${d.goes_by ? `<div class="muted" style="font-size:12px">goes by ${esc(d.goes_by)}</div>` : ''}${d.role !== 'Driver' ? ` <span class="badge b-Reviewed">${esc(d.role)}</span>` : ''}</td>
         <td>${esc(d.driver_id)}</td>
         <td>${esc(d.truck_type || '—')}</td>
         <td>${esc(d.location || '—')}</td>
@@ -103,6 +103,7 @@ window.TMDrivers = (function () {
     st.editing = d || null;
     $('drvModalTitle').textContent = d ? 'Edit ' + d.name : 'Add driver';
     $('dfName').value = d ? d.name : '';
+    $('dfGoesBy').value = d ? (d.goes_by || '') : '';
     $('dfId').value = d ? d.driver_id : '';
     $('dfStatus').value = d ? d.status : 'Active';
     $('dfType').value = d ? (d.truck_type || '') : 'Day Cabs';
@@ -126,6 +127,8 @@ window.TMDrivers = (function () {
     const msgs = [];
     const nm = $('dfName').value.trim();
     if (nm && nm !== d.name) msgs.push('Renaming carries their payroll hours and time off history over to the new name.');
+    const gb = $('dfGoesBy').value.trim();
+    if (gb !== (d.goes_by || '')) msgs.push('Time Off and the trailer inspection list will show ' + (gb || nm || d.name) + '. Payroll keeps the legal name.');
     if ($('dfStatus').value === 'Inactive' && d.status === 'Active') msgs.push('Inactive drivers drop off every app\'s name list. Their history stays.');
     $('dfHint').textContent = msgs.join(' ');
   }
@@ -133,7 +136,7 @@ window.TMDrivers = (function () {
     ev.preventDefault();
     const d = {
       id: st.editing ? st.editing.id : undefined,
-      name: $('dfName').value, driver_id: $('dfId').value, status: $('dfStatus').value,
+      name: $('dfName').value, goes_by: $('dfGoesBy').value.trim() || null, driver_id: $('dfId').value, status: $('dfStatus').value,
       truck_type: $('dfType').value, location: $('dfLoc').value, start_date: $('dfStart').value,
       end_date: $('dfStatus').value === 'Inactive' ? ($('dfEnd').value || new Date().toLocaleDateString('en-CA')) : $('dfEnd').value,
       role: $('dfRole').value, phone: $('dfPhone').value, email: $('dfEmail').value,
@@ -153,7 +156,7 @@ window.TMDrivers = (function () {
     } finally { TS.setBusyBtn(btn, false); }
   }
   function exportCsv() {
-    const cols = ['name', 'driver_id', 'role', 'status', 'truck_type', 'location', 'start_date', 'end_date', 'email', 'phone', 'samsara_id', 'notes'];
+    const cols = ['name', 'goes_by', 'driver_id', 'role', 'status', 'truck_type', 'location', 'start_date', 'end_date', 'email', 'phone', 'samsara_id', 'notes'];
     TS.csv('drivers-' + new Date().toLocaleDateString('en-CA') + '.csv',
       ['Driver Name', 'Driver ID', 'Role', 'Status', 'Truck Type', 'Location', 'Start Date', 'Last Day', 'Email', 'Phone', 'Samsara ID', 'Notes'],
       filtered().map(d => cols.map(c => d[c] || '')));
@@ -176,6 +179,7 @@ window.TMDrivers = (function () {
   $('drvForm').addEventListener('submit', save);
   $('drvModalClose').onclick = () => $('drvModal').close();
   $('drvModal').addEventListener('click', e => { if (e.target.id === 'drvModal') $('drvModal').close(); });
+  $('dfGoesBy').addEventListener('input', hint);
   $('dfName').addEventListener('input', () => { if ($('dfId').dataset.auto) $('dfId').value = suggestId($('dfName').value); hint(); });
   $('dfId').addEventListener('input', () => { $('dfId').dataset.auto = ''; });
   $('dfStatus').addEventListener('change', () => { if ($('dfStatus').value === 'Inactive' && !$('dfEnd').value) $('dfEnd').value = new Date().toLocaleDateString('en-CA'); hint(); });

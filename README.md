@@ -5,7 +5,7 @@ One installable app (PWA) with everything a transportation manager needs. Driver
 | Home screen tile | What it is | Sign-in |
 |---|---|---|
 | **Unpaid Time Off** | Pending requests with Approve / Deny, Who's Out (next 30 days), each driver's history, all requests, CSV export, "Manage drivers" opens the Drivers list | Each manager's own Time Off PIN |
-| **Drivers** | The master driver list for every app: add drivers, fix names, Driver ID, truck type, location, start date, mark inactive. Changes reach payroll, Unpaid Time Off and the trailer inspection list within the hour. No pay rates here. | The manager passcode (same as Recruiting credits) |
+| **Drivers** | The master driver list for every app: add drivers, fix names, set the name a driver goes by (Paul Bay, AJ Thompson; payroll keeps the legal name), Driver ID, truck type, location, start date, mark inactive. Changes reach payroll, Unpaid Time Off and the trailer inspection list within the hour. No pay rates here. | The manager passcode (same as Recruiting credits) |
 | **PTO Approvals** | Opens the existing PTO manager dashboard in a new tab | That system's own Google sign-in |
 | **Driver & Trailer Tracking** | Opens the Driver & Trailer Tracking app in a new tab | That app's own |
 | **Trailer Inspections** | The Trailer Shop's manager side: inspections and the 5-step review, Shop Analytics, Driver & Location, Trailer History, Trailer Map | The Dashboard PIN (Config tab) |
