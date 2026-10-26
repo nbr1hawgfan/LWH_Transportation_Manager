@@ -9,6 +9,7 @@ window.TMApp = (function () {
   const SCREENS = {
     home:       { id: 'scrHome',           title: 'Logistics Warehouse' },
     timeoff:    { id: 'scrTimeOff',        title: 'Unpaid Time Off' },
+    drivers:    { id: 'scrDrivers',        title: 'Drivers' },
     trailers:   { id: 'scrMgr',            title: 'Trailer Inspections' },
     dispatch:   { id: 'yardBoard',         title: 'Dispatch Board' },
     timesheets: { id: 'spotterTimesheets', title: 'All Timesheets' },
@@ -88,10 +89,12 @@ window.TMApp = (function () {
     screen(SCREENS[view].id);
     if (view === 'home') { greet(); refreshHub(); }
     if (view === 'timeoff') TMTimeOff.open();
+    if (view === 'drivers') TMDrivers.open();
     if (view === 'trailers') { showTab(mtab); if (!TSMgr.isLoaded()) TSMgr.load(); }
   }
   function refresh() {
     if (current === 'timeoff') return TMTimeOff.refresh();
+    if (current === 'drivers') return TMDrivers.refresh();
     if (current === 'trailers' && !$('scrMgr').hidden) {
       if (mtab === 'insp') return TSMgr.load();
       if (mtab === 'map') return TSMap.refresh();

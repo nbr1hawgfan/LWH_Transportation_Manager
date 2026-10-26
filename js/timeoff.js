@@ -295,7 +295,8 @@ window.TMTimeOff = (function () {
         <div class="kpi"><b>${all.occ}</b><span>All time</span></div>
       </div>
       ${list.length ? list.map(r => reqCard(r, { actions: cancelAction(r) })).join('') : '<div class="empty">No requests.</div>'}
-      ${state.drivers.find(x => x.name === name) ? `<button class="btn outline block" data-editdriver="${esc(name)}">Edit driver</button>` : ''}`;
+      <button class="btn outline block" data-go="drivers" onclick="document.getElementById('toModal').close()">Edit in Drivers</button>
+      <p class="muted center" style="font-size:13px">Names, emails and active/inactive are managed in Drivers and reach Time Off within the hour.</p>`;
     openModal();
   }
 
@@ -347,7 +348,6 @@ window.TMTimeOff = (function () {
   });
   $('toDrvSearch').addEventListener('input', renderDrivers);
   $('toDrvYear').addEventListener('change', renderDrivers);
-  $('toAddDriver').onclick = () => driverForm(null);
   $('toAllSearch').addEventListener('input', renderAll);
   $('toAllStatus').addEventListener('change', renderAll);
   $('toCsv').onclick = exportCsv;

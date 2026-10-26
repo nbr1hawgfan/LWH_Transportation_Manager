@@ -56,6 +56,13 @@
             <span class="hub-ext">Opens ↗</span>
           </a>
         </div>
+        <div class="hub-sec">Team</div>
+        <div class="hub-grid">
+          <button class="hub-tile" data-go="drivers">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.2c2.1.7 3.5 2.6 3.5 5.8"/></svg></span>
+            <span class="hub-t"><b>Drivers</b><span>The one driver list for every app — add drivers, fix names, locations, mark who's left.</span></span>
+          </button>
+        </div>
         <div class="hub-sec">Trailers</div>
         <div class="hub-grid">
           <button class="hub-tile" data-go="trailers">
@@ -87,6 +94,48 @@
     </section>
 
     <!-- TIME OFF -->
+    <!-- DRIVERS (master list) -->
+    <section class="screen" id="scrDrivers" hidden>
+      <div class="wrap narrow" id="drvLogin">
+        <div class="card">
+          <div class="card-h">Drivers</div>
+          <div class="card-b">
+            <p class="muted" style="margin-top:0">Enter the manager passcode (the same one used for Recruiting credits).</p>
+            <label class="lbl" for="drvPass">Manager passcode</label>
+            <input id="drvPass" type="password" autocomplete="current-password" class="big">
+            <div class="pin-err" id="drvPassErr"></div>
+            <button class="btn red block" id="drvPassGo">Open drivers</button>
+          </div>
+        </div>
+        <button class="link-back" data-go="home">← Home</button>
+      </div>
+      <div class="wrap wide" id="drvPanel" hidden>
+        <div class="kpis">
+          <div class="kpi green"><b id="drvKActive">--</b><span>Active</span></div>
+          <div class="kpi"><b id="drvKDay">--</b><span>Day cabs</span></div>
+          <div class="kpi"><b id="drvKSpot">--</b><span>Spotters</span></div>
+          <div class="kpi red"><b id="drvKInactive">--</b><span>Inactive</span></div>
+        </div>
+        <div class="filters">
+          <div class="f grow"><label class="lbl">Search</label><input type="search" id="drvSearch" placeholder="Name or driver ID"></div>
+          <div class="f"><label class="lbl">Status</label><select id="drvFStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="">All</option></select></div>
+          <div class="f"><label class="lbl">Location</label><select id="drvFLoc"><option value="">All locations</option></select></div>
+          <div class="f"><label class="lbl">Type</label><select id="drvFType"><option value="">All types</option><option>Day Cabs</option><option>Spotters</option><option value="Manager">Managers / other</option></select></div>
+          <div class="f f-btns"><button class="btn red sm" id="drvAdd">+ Add driver</button><button class="btn dark sm" id="drvCsv">Export CSV</button></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><span>Driver list</span><span class="muted-l" id="drvCount">--</span></div>
+          <div class="table-wrap">
+            <table class="tbl" id="drvTable">
+              <thead><tr><th data-sort="name">Name</th><th data-sort="driver_id">Driver ID</th><th data-sort="truck_type">Type</th><th data-sort="location">Location</th><th data-sort="start_date">Start date</th><th data-sort="status">Status</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <p class="muted drv-note">Changes reach the payroll timecard, Unpaid Time Off and the trailer inspection list within the hour. Pay rates are never shown here — they stay in the payroll Sheet. <button class="linkish" id="drvSignOut">Sign out</button></p>
+      </div>
+    </section>
+
     <section class="screen" id="scrTimeOff" hidden>
       <div class="wrap narrow" id="toLogin">
         <div class="card">
@@ -124,7 +173,7 @@
             <div class="filters">
               <div class="f grow"><label class="lbl">Search</label><input type="search" id="toDrvSearch" placeholder="Driver name"></div>
               <div class="f"><label class="lbl">Year</label><select id="toDrvYear"></select></div>
-              <div class="f f-btns"><button class="btn dark sm" id="toAddDriver">+ Add driver</button></div>
+              <div class="f f-btns"><button class="btn dark sm" data-go="drivers">Manage drivers</button></div>
             </div>
             <div class="panel">
               <div class="panel-h"><span>Drivers</span><span class="muted-l">Tap a driver for full history</span></div>
@@ -408,6 +457,29 @@
     </section>
   </main>
 
+  <dialog id="drvModal" class="tm-modal">
+    <div class="tm-modal-h"><b id="drvModalTitle">Driver</b><button class="tb-btn" id="drvModalClose" aria-label="Close">✕</button></div>
+    <form class="tm-modal-b" id="drvForm" autocomplete="off">
+      <div class="grid2">
+        <div class="full"><label class="lbl" for="dfName">Full name</label><input id="dfName" required maxlength="80" placeholder="First Last"></div>
+        <div><label class="lbl" for="dfId">Driver ID</label><input id="dfId" required maxlength="12" placeholder="e.g. JSMITH" style="text-transform:uppercase"></div>
+        <div><label class="lbl" for="dfStatus">Status</label><select id="dfStatus"><option>Active</option><option>Inactive</option></select></div>
+        <div><label class="lbl" for="dfType">Truck type</label><select id="dfType"><option>Day Cabs</option><option>Spotters</option><option value="">— (not a driver)</option></select></div>
+        <div><label class="lbl" for="dfLoc">Location</label><input id="dfLoc" list="drvLocList" maxlength="40" placeholder="Road, 5th, Pernod AM, Dallas…"><datalist id="drvLocList"></datalist></div>
+        <div><label class="lbl" for="dfStart">Start date</label><input id="dfStart" type="date"></div>
+        <div><label class="lbl" for="dfEnd">Last day (if they left)</label><input id="dfEnd" type="date"></div>
+        <div><label class="lbl" for="dfRole">Role</label><select id="dfRole"><option>Driver</option><option>Manager</option><option>Other</option></select></div>
+        <div><label class="lbl" for="dfPhone">Phone (optional)</label><input id="dfPhone" type="tel" maxlength="30"></div>
+        <div class="full"><label class="lbl" for="dfEmail">Email (optional — gets time off decisions)</label><input id="dfEmail" type="email" maxlength="120"></div>
+        <div><label class="lbl" for="dfSamsara">Samsara driver ID (optional)</label><input id="dfSamsara" maxlength="40"></div>
+        <div class="full"><label class="lbl" for="dfNotes">Notes (optional)</label><textarea id="dfNotes" maxlength="300" style="min-height:60px"></textarea></div>
+      </div>
+      <div class="drv-hint" id="dfHint"></div>
+      <div class="drv-meta muted" id="dfMeta"></div>
+      <button class="btn red block" type="submit" id="dfSave">Save</button>
+    </form>
+  </dialog>
+
   <dialog id="toModal" class="tm-modal">
     <div class="tm-modal-h"><b id="toModalTitle"></b><button class="tb-btn" id="toModalClose" aria-label="Close">✕</button></div>
     <div class="tm-modal-b" id="toModalBody"></div>
@@ -458,6 +530,7 @@
   <script src="js/spottertimesheets.js"></script>
   <script src="js/fuelboard.js"></script>
   <script src="js/fsc.js"></script>
+  <script src="js/drivers.js"></script>
   <script src="js/app.js"></script>
 <!-- LWH-USAGE-START: anonymous app-usage ping (see hub.logisticswarehouse.net/usage/) -->
 <script>

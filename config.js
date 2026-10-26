@@ -8,7 +8,10 @@ window.TM_CONFIG = {
   PTO_MANAGER_URL: 'https://nbr1hawgfan.github.io/LWH_PTO/manager/',
 
   // Driver & Trailer Tracking app (opens in a new tab)
-  TRACKING_URL: 'https://nbr1hawgfan.github.io/LWH_Driver-and-Trailer-Tracking/'
+  TRACKING_URL: 'https://nbr1hawgfan.github.io/LWH_Driver-and-Trailer-Tracking/',
+
+  // Master driver list (Supabase). Managers sign in with the manager passcode.
+  DRIVERS_API_URL: 'https://tjivcqxnkftujceumdtx.supabase.co/functions/v1/drivers'
 };
 
 // Trailers — the Trailer Defect Inspection web app (Code.gs + Api.gs +

@@ -222,3 +222,12 @@
 /* ---------- Shop dashboard: full width on desktop monitors (Oct 2026) ---------- */
 #scrMgr .wrap.wide { max-width: none; padding: 16px 24px; }
 @media (max-width: 600px) { #scrMgr .wrap.wide { padding: 12px; } }
+
+/* ---------- Drivers (master list) ---------- */
+.drv-inactive td { color: var(--muted); background: #fafafa; }
+.drv-note { font-size: 13px; margin-top: 10px; }
+.linkish { background: none; border: 0; color: var(--red); font-weight: 800; cursor: pointer; padding: 0 4px; text-decoration: underline; }
+.drv-hint { background: var(--amber-t); color: var(--amber); font-weight: 700; font-size: 13px; padding: 8px 10px; margin-top: 12px; }
+.drv-hint:empty { display: none; }
+.drv-meta { font-size: 12px; margin-top: 8px; }
+#drvForm .grid2 > div { min-width: 0; }
