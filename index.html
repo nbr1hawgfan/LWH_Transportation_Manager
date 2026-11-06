@@ -62,6 +62,11 @@
             <span class="hub-ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.2c2.1.7 3.5 2.6 3.5 5.8"/></svg></span>
             <span class="hub-t"><b>Drivers</b><span>The one driver list for every app — add drivers, fix names, locations, mark who's left.</span></span>
           </button>
+          <a class="hub-tile" href="https://nbr1hawgfan.github.io/LWH_Driver_Toolkit/dispatch/" target="_blank" rel="noopener">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg></span>
+            <span class="hub-t"><b>Driver Messages</b><span>Send messages to drivers' Toolkit, see who read and answered, and hand out sign-in codes.</span></span>
+            <span class="hub-ext">Opens ↗</span>
+          </a>
         </div>
         <div class="hub-sec">Trailers</div>
         <div class="hub-grid">
@@ -121,7 +126,7 @@
           <div class="f"><label class="lbl">Status</label><select id="drvFStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="">All</option></select></div>
           <div class="f"><label class="lbl">Location</label><select id="drvFLoc"><option value="">All locations</option></select></div>
           <div class="f"><label class="lbl">Type</label><select id="drvFType"><option value="">All types</option><option>Day Cabs</option><option>Spotters</option><option value="Manager">Managers / other</option></select></div>
-          <div class="f f-btns"><button class="btn red sm" id="drvAdd">+ Add driver</button><button class="btn dark sm" id="drvCsv">Export CSV</button></div>
+          <div class="f f-btns"><button class="btn red sm" id="drvAdd">+ Add driver</button><button class="btn dark sm" id="drvCsv">Export CSV</button><a class="btn dark sm" href="https://nbr1hawgfan.github.io/LWH_Driver_Toolkit/dispatch/" target="_blank" rel="noopener" style="text-decoration:none">Driver Messages ↗</a></div>
         </div>
         <div class="panel">
           <div class="panel-h"><span>Driver list</span><span class="muted-l" id="drvCount">--</span></div>
@@ -132,7 +137,7 @@
             </table>
           </div>
         </div>
-        <p class="muted drv-note">Changes reach the payroll timecard, Unpaid Time Off and the trailer inspection list within the hour. Pay rates are never shown here — they stay in the payroll Sheet. <button class="linkish" id="drvSignOut">Sign out</button></p>
+        <p class="muted drv-note">Changes reach the payroll timecard, Unpaid Time Off and the trailer inspection list within the hour. Pay rates are never shown here — they stay in the payroll Sheet. New drivers get a Driver Toolkit sign-in code in Driver Messages → Driver Sign-in; marking someone Inactive signs them out of messages. <button class="linkish" id="drvSignOut">Sign out</button></p>
       </div>
     </section>
 
