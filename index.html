@@ -62,11 +62,11 @@
             <span class="hub-ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.2c2.1.7 3.5 2.6 3.5 5.8"/></svg></span>
             <span class="hub-t"><b>Drivers</b><span>The one driver list for every app — add drivers, fix names, locations, mark who's left.</span></span>
           </button>
-          <a class="hub-tile" href="https://nbr1hawgfan.github.io/LWH_Driver_Toolkit/dispatch/" target="_blank" rel="noopener">
+          <button class="hub-tile" data-go="messages">
             <span class="hub-ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg></span>
-            <span class="hub-t"><b>Driver Messages</b><span>Send messages to drivers' Toolkit, see who read and answered, and hand out sign-in codes.</span></span>
-            <span class="hub-ext">Opens ↗</span>
-          </a>
+            <span class="hub-t"><b>Driver Messages</b><span>Messages from drivers, send to drivers' Toolkit (BOLs and photos too), read receipts, sign-in codes.</span></span>
+            <span class="hub-badge" id="badgeMessages" hidden>0</span>
+          </button>
         </div>
         <div class="hub-sec">Trailers</div>
         <div class="hub-grid">
@@ -126,7 +126,7 @@
           <div class="f"><label class="lbl">Status</label><select id="drvFStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="">All</option></select></div>
           <div class="f"><label class="lbl">Location</label><select id="drvFLoc"><option value="">All locations</option></select></div>
           <div class="f"><label class="lbl">Type</label><select id="drvFType"><option value="">All types</option><option>Day Cabs</option><option>Spotters</option><option value="Manager">Managers / other</option></select></div>
-          <div class="f f-btns"><button class="btn red sm" id="drvAdd">+ Add driver</button><button class="btn dark sm" id="drvCsv">Export CSV</button><a class="btn dark sm" href="https://nbr1hawgfan.github.io/LWH_Driver_Toolkit/dispatch/" target="_blank" rel="noopener" style="text-decoration:none">Driver Messages ↗</a></div>
+          <div class="f f-btns"><button class="btn red sm" id="drvAdd">+ Add driver</button><button class="btn dark sm" id="drvCsv">Export CSV</button><button class="btn dark sm" data-go="messages">Driver Messages</button></div>
         </div>
         <div class="panel">
           <div class="panel-h"><span>Driver list</span><span class="muted-l" id="drvCount">--</span></div>
@@ -212,6 +212,11 @@
     </section>
 
     <!-- MANAGER: PIN -->
+    <!-- DRIVER MESSAGES — the Driver Message Center, shown inside this app -->
+    <section class="screen" id="scrMessages" hidden>
+      <iframe id="dmFrame" class="dm-frame" title="Driver Messages" allow="autoplay"></iframe>
+    </section>
+
     <section class="screen" id="scrPin" hidden>
       <div class="wrap narrow">
         <div class="card">
@@ -537,6 +542,7 @@
   <script src="js/fuelboard.js"></script>
   <script src="js/fsc.js"></script>
   <script src="js/drivers.js"></script>
+  <script src="js/drivermsgs.js"></script>
   <script src="js/app.js"></script>
 <!-- LWH-USAGE-START: anonymous app-usage ping (see hub.logisticswarehouse.net/usage/) -->
 <script>

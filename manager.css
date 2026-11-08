@@ -231,3 +231,7 @@
 .drv-hint:empty { display: none; }
 .drv-meta { font-size: 12px; margin-top: 8px; }
 #drvForm .grid2 > div { min-width: 0; }
+
+/* Driver Messages screen — Message Center fills the screen under the top bar */
+#scrMessages { padding: 0; }
+.dm-frame { display: block; width: 100%; border: 0; min-height: 420px; background: #f3f3f3; }

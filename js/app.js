@@ -10,6 +10,7 @@ window.TMApp = (function () {
     home:       { id: 'scrHome',           title: 'Logistics Warehouse' },
     timeoff:    { id: 'scrTimeOff',        title: 'Unpaid Time Off' },
     drivers:    { id: 'scrDrivers',        title: 'Drivers' },
+    messages:   { id: 'scrMessages',       title: 'Driver Messages' },
     trailers:   { id: 'scrMgr',            title: 'Trailer Inspections' },
     dispatch:   { id: 'yardBoard',         title: 'Dispatch Board' },
     timesheets: { id: 'spotterTimesheets', title: 'All Timesheets' },
@@ -90,11 +91,13 @@ window.TMApp = (function () {
     if (view === 'home') { greet(); refreshHub(); }
     if (view === 'timeoff') TMTimeOff.open();
     if (view === 'drivers') TMDrivers.open();
+    if (view === 'messages') TMDriverMsgs.open();
     if (view === 'trailers') { showTab(mtab); if (!TSMgr.isLoaded()) TSMgr.load(); }
   }
   function refresh() {
     if (current === 'timeoff') return TMTimeOff.refresh();
     if (current === 'drivers') return TMDrivers.refresh();
+    if (current === 'messages') return TMDriverMsgs.reload();
     if (current === 'trailers' && !$('scrMgr').hidden) {
       if (mtab === 'insp') return TSMgr.load();
       if (mtab === 'map') return TSMap.refresh();
@@ -120,6 +123,7 @@ window.TMApp = (function () {
   }
   async function refreshHub() {
     renderSign();
+    TMDriverMsgs.peek();
     const n = await TMTimeOff.peek();
     if (n !== null) setBadge('timeoff', n);
   }
@@ -127,6 +131,7 @@ window.TMApp = (function () {
     const parts = [];
     if (TMTimeOff.signedIn()) parts.push(`Time Off: signed in as <b>${TS.esc(TMTimeOff.name())}</b> <button class="btn outline sm" data-signout="timeoff">Sign out</button>`);
     if (state.mgrToken) parts.push('Trailers: signed in <button class="btn outline sm" data-signout="trailers">Sign out</button>');
+    if (TMDriverMsgs.signedIn()) parts.push('Driver Messages: signed in <button class="btn outline sm" data-signout="messages">Sign out</button>');
     $('hubSign').innerHTML = parts.length ? parts.map(p => `<div>${p}</div>`).join('') : '';
     if (!TMTimeOff.signedIn()) setBadge('timeoff', 0);
   }
@@ -160,6 +165,7 @@ window.TMApp = (function () {
     const s = e.target.closest('[data-signout]');
     if (s) {
       if (s.dataset.signout === 'timeoff') { if (confirm('Sign out of Time Off?')) TMTimeOff.signOut(); }
+      else if (s.dataset.signout === 'messages') { if (confirm('Sign out of Driver Messages?')) TMDriverMsgs.signOut().then(renderSign); }
       else if (confirm('Sign out of Trailers?')) trailerSignOut();
     }
   });
