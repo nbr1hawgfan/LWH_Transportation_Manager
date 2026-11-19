@@ -7,16 +7,18 @@ window.TMDrivers = (function () {
   const API = (window.TM_CONFIG || {}).DRIVERS_API_URL || 'https://tjivcqxnkftujceumdtx.supabase.co/functions/v1/drivers';
   const $ = id => document.getElementById(id);
   const esc = TS.esc;
-  const PASS_KEY = 'tm_drvpass', PASS_MS = 8 * 60 * 60 * 1000;
-  const st = { pass: loadPass(), rows: [], locations: [], loaded: false, sort: { key: 'name', asc: true }, editing: null };
-
-  function loadPass() { try { const s = JSON.parse(localStorage.getItem(PASS_KEY)); return s && Date.now() - s.at < PASS_MS ? s.p : ''; } catch (e) { return ''; } }
-  function savePass(p) { try { p ? localStorage.setItem(PASS_KEY, JSON.stringify({ p, at: Date.now() })) : localStorage.removeItem(PASS_KEY); } catch (e) {} st.pass = p || ''; }
+  // Sign-in = Driver Messages sign-in (Driver ID + PTO PIN), for anyone set as Manager in the driver list.
+  // The old shared manager passcode was retired Nov 2026.
+  const TK = 'lwhdispatch_token';
+  const RPC = 'https://tjivcqxnkftujceumdtx.supabase.co/rest/v1/rpc/';
+  const KEY = 'sb_publishable_PYlWSW6-Gi-QZl91IXUq0Q_W5mO3sDT';
+  const token = () => { try { return localStorage.getItem(TK) || ''; } catch (e) { return ''; } };
+  const st = { ok: false, rows: [], locations: [], loaded: false, sort: { key: 'name', asc: true }, editing: null };
 
   async function api(body) {
     const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 30000);
     let res;
-    try { res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal }); }
+    try { res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ token: token() }, body)), signal: ctrl.signal }); }
     catch (e) { throw new Error(e.name === 'AbortError' ? 'The driver list took too long to answer. Try again.' : 'No connection to the driver list.'); }
     finally { clearTimeout(t); }
     const j = await res.json().catch(() => ({}));
@@ -28,28 +30,41 @@ window.TMDrivers = (function () {
   }
 
   /* ---------- sign in ---------- */
-  function shell() {
-    $('drvLogin').hidden = !!st.pass;
-    $('drvPanel').hidden = !st.pass;
-    if (st.pass) { if (!st.loaded) load(); else render(); }
-    else setTimeout(() => $('drvPass').focus(), 50);
+  function show() {
+    $('drvLogin').hidden = st.ok;
+    $('drvPanel').hidden = !st.ok;
+    if (st.ok) { if (!st.loaded) load(); else render(); }
+    else setTimeout(() => ($('drvId').value ? $('drvPin') : $('drvId')).focus(), 50);
+  }
+  async function shell() {
+    if (!st.ok && token()) {
+      try { await api({ action: 'verify' }); st.ok = true; }
+      catch (e) { if (e.auth) $('drvPassErr').textContent = /Managers only/.test(e.message) ? e.message : ''; }
+    }
+    show();
   }
   async function login() {
-    const p = $('drvPass').value.trim();
-    if (!p) return;
+    const id = $('drvId').value.trim().toUpperCase(), pin = $('drvPin').value.trim();
     $('drvPassErr').textContent = '';
+    if (!id || !/^\d{4,6}$/.test(pin)) { $('drvPassErr').textContent = 'Enter your Driver ID and your PIN (your PTO / time off PIN).'; return; }
     await TS.run(async () => {
-      try { await api({ action: 'verify', passcode: p }); savePass(p); $('drvPass').value = ''; shell(); }
-      catch (e) { $('drvPassErr').textContent = e.message; }
-    }, 'Checking passcode…');
+      try {
+        const r = await fetch(RPC + 'drv_login', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_driver_id: id, p_pin: pin }) }).then(r => r.json());
+        if (!r.ok) { $('drvPassErr').textContent = r.error || 'Wrong PIN'; return; }
+        try { localStorage.setItem(TK, r.token); localStorage.setItem('lwhdispatch_id', id); } catch (e) {}
+        $('drvPin').value = '';
+        await api({ action: 'verify' }); st.ok = true; show();
+        if (window.TMApp) TMApp.refreshHub();
+      } catch (e) { $('drvPassErr').textContent = e.message; }
+    }, 'Signing in…');
   }
-  function signOut() { savePass(''); st.rows = []; st.loaded = false; shell(); }
+  function signOut() { st.ok = false; st.rows = []; st.loaded = false; show(); }
 
   /* ---------- list ---------- */
   function load() {
     return TS.run(async () => {
       try {
-        const j = await api({ action: 'admin_list', passcode: st.pass });
+        const j = await api({ action: 'admin_list' });
         st.rows = j.drivers || []; st.locations = j.locations || []; st.loaded = true;
         fillLocations(); render();
       } catch (e) { if (e.auth) { signOut(); $('drvPassErr').textContent = e.message; } throw e; }
@@ -144,7 +159,7 @@ window.TMDrivers = (function () {
     };
     const btn = $('dfSave'); TS.setBusyBtn(btn, true, 'Saving…');
     try {
-      const j = await api({ action: 'save', passcode: st.pass, driver: d, by: (window.TMApp && TMApp.managerName()) || 'Manager app' });
+      const j = await api({ action: 'save', driver: d, by: (window.TMApp && TMApp.managerName()) || 'Manager app' });
       const i = st.rows.findIndex(r => r.id === j.driver.id);
       if (i > -1) st.rows[i] = j.driver; else st.rows.push(j.driver);
       if (j.driver.location && !st.locations.includes(j.driver.location)) { st.locations.push(j.driver.location); st.locations.sort(); fillLocations(); }
@@ -164,8 +179,9 @@ window.TMDrivers = (function () {
 
   /* ---------- wiring ---------- */
   $('drvPassGo').onclick = login;
-  $('drvPass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
-  $('drvSignOut').onclick = signOut;
+  $('drvPin').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+  try { $('drvId').value = localStorage.getItem('lwhdispatch_id') || ''; } catch (e) {}
+  $('drvSignOut').onclick = async () => { if (!confirm('Sign out? This also signs you out of Driver Messages on this device.')) return; if (window.TMDriverMsgs) await TMDriverMsgs.signOut(); signOut(); if (window.TMApp) TMApp.refreshHub(); };
   ['drvSearch', 'drvFStatus', 'drvFLoc', 'drvFType'].forEach(id => $(id).addEventListener(id === 'drvSearch' ? 'input' : 'change', render));
   $('drvTable').querySelector('thead').addEventListener('click', e => {
     const k = e.target.dataset.sort; if (!k) return;
@@ -184,5 +200,5 @@ window.TMDrivers = (function () {
   $('dfId').addEventListener('input', () => { $('dfId').dataset.auto = ''; });
   $('dfStatus').addEventListener('change', () => { if ($('dfStatus').value === 'Inactive' && !$('dfEnd').value) $('dfEnd').value = new Date().toLocaleDateString('en-CA'); hint(); });
 
-  return { open: shell, refresh: () => { if (st.pass) load(); } };
+  return { open: shell, refresh: () => { if (st.ok) load(); } };
 })();

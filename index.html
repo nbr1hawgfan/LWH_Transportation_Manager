@@ -107,11 +107,13 @@
         <div class="card">
           <div class="card-h">Drivers</div>
           <div class="card-b">
-            <p class="muted" style="margin-top:0">Enter the manager passcode (the same one used for Recruiting credits).</p>
-            <label class="lbl" for="drvPass">Manager passcode</label>
-            <input id="drvPass" type="password" autocomplete="current-password" class="big">
+            <p class="muted" style="margin-top:0">Sign in with your Driver ID and your PTO / time off PIN — the same sign-in as Driver Messages. Managers only.</p>
+            <label class="lbl" for="drvId">Driver ID</label>
+            <input id="drvId" autocomplete="username" autocapitalize="characters" class="big">
+            <label class="lbl" for="drvPin">PIN</label>
+            <input id="drvPin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" class="big">
             <div class="pin-err" id="drvPassErr"></div>
-            <button class="btn red block" id="drvPassGo">Open drivers</button>
+            <button class="btn red block" id="drvPassGo">Sign in</button>
           </div>
         </div>
         <button class="link-back" data-go="home">← Home</button>
