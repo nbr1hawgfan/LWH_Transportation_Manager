@@ -235,3 +235,16 @@
 /* Driver Messages screen — Message Center fills the screen under the top bar */
 #scrMessages { padding: 0; }
 .dm-frame { display: block; width: 100%; border: 0; min-height: 420px; background: #f3f3f3; }
+
+/* ---------- Needs attention (v1.3.0) ---------- */
+.hub-attn { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.att-card { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; background: #fff; border: 1px solid var(--line); border-top: 6px solid #2563eb; padding: 12px 14px; cursor: pointer; font: inherit; color: var(--ink); }
+.att-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+.att-card b { font-size: 32px; font-weight: 900; line-height: 1; }
+.att-t { font-weight: 800; font-size: 14.5px; }
+.att-s { font-size: 12.5px; color: var(--muted); }
+.att-bad { border-top-color: var(--red); } .att-bad b { color: var(--red); }
+.att-warn { border-top-color: #d97706; } .att-warn b { color: #b45309; }
+.att-signin { border-top-color: var(--black); border-style: dashed; border-top-style: solid; }
+.att-good { grid-column: 1 / -1; padding: 14px; background: #effaf0; border-left: 6px solid #1f8a3b; font-weight: 800; }
+.att-note { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
