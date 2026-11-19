@@ -124,8 +124,10 @@ window.TMApp = (function () {
   async function refreshHub() {
     renderSign();
     TMDriverMsgs.peek();
+    TMAttention.refresh();
     const n = await TMTimeOff.peek();
     if (n !== null) setBadge('timeoff', n);
+    TMAttention.setTimeoff(TMTimeOff.signedIn() ? (n || 0) : 0);
   }
   function renderSign() {
     const parts = [];

@@ -21,6 +21,12 @@ window.TMDriverMsgs = (function () {
     if (!loaded) { f.src = URL_; loaded = true; }
     requestAnimationFrame(size);
   }
+  // Open the Message Center on a given tab (pods, sites, pins, inbox…).
+  function tab(t) {
+    const f = $('dmFrame'); if (!t) return;
+    if (!loaded) { f.src = URL_ + '&tab=' + encodeURIComponent(t); loaded = true; return; }
+    try { f.contentWindow.postMessage({ lwhmc: 'tab', tab: t }, location.origin); } catch (e) {}
+  }
   function reload() { const f = $('dmFrame'); f.src = URL_ + '&r=' + Date.now(); loaded = true; }
   async function rpc(name, args) {
     const r = await fetch(API + name, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}), cache: 'no-store' });
@@ -46,5 +52,5 @@ window.TMDriverMsgs = (function () {
   // Keep the Home badge fresh while the app is open.
   setInterval(() => { if (!document.hidden) peek(); }, 60000);
 
-  return { open, reload, peek, signOut, signedIn: () => !!token() };
+  return { open, tab, reload, peek, signOut, signedIn: () => !!token() };
 })();
