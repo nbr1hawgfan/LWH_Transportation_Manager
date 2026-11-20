@@ -10,15 +10,15 @@ window.TMApp = (function () {
     home:       { id: 'scrHome',           title: 'Logistics Warehouse' },
     timeoff:    { id: 'scrTimeOff',        title: 'Unpaid Time Off' },
     drivers:    { id: 'scrDrivers',        title: 'Drivers' },
+    hours:      { id: 'scrHours',          title: 'Driver Hours' },
     messages:   { id: 'scrMessages',       title: 'Driver Messages' },
     trailers:   { id: 'scrMgr',            title: 'Trailer Inspections' },
     dispatch:   { id: 'yardBoard',         title: 'Dispatch Board' },
-    timesheets: { id: 'spotterTimesheets', title: 'All Timesheets' },
     fuel:       { id: 'fuelboard',         title: 'Fuel Prices' },
     surcharge:  { id: 'fsc',               title: 'Fuel Surcharge' }
   };
   // Toolkit view names → ours (the copied Toolkit files call LWHUI.show)
-  const ALIAS = { yardBoard: 'dispatch', spotterTimesheets: 'timesheets', fuelboard: 'fuel', fsc: 'surcharge', home: 'home' };
+  const ALIAS = { yardBoard: 'dispatch', spotterTimesheets: 'home', timesheets: 'home', fuelboard: 'fuel', fsc: 'surcharge', home: 'home' };
 
   /* ---------- trailer sign-in (Dashboard PIN, kept 8 hours on this device) ---------- */
   function loadTrailer() {
@@ -75,14 +75,25 @@ window.TMApp = (function () {
   }
 
   /* ---------- navigation ---------- */
-  function setSub(t) { $('tbSub').textContent = t || 'Logistics Warehouse'; }
+  function setSub(t) { $('tbSub').textContent = t || 'Home'; }
+  // Left menu / top bar: highlight where we are. Time Clock + Cards live inside Driver Messages (tab:…).
+  let navTab = null;
+  function markNav(view) {
+    const key = view === 'messages' && navTab ? 'tab:' + navTab : view;
+    document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === key));
+    document.body.classList.remove('side-open'); const t = $('navToggle'); if (t) t.setAttribute('aria-expanded', 'false');
+  }
+  function setNavTab(t) { navTab = t || null; }
   function open(view, fromHash) {
     view = ALIAS[view] || view;
     if (!SCREENS[view]) view = 'home';
     current = view;
     if (!fromHash) { const h = view === 'home' ? '' : '#' + view; if (location.hash !== h) history.pushState(null, '', h || location.pathname + location.search); }
     $('btnBack').hidden = view === 'home';
-    setSub(SCREENS[view].title);
+    if (view !== 'messages') navTab = null;
+    const TABNAME = { clock: 'Time Clock', cards: 'Time Clock Cards', pods: 'Proof of Delivery', sites: 'Site Notes', pins: 'Driver Sign-in' };
+    setSub(view === 'messages' && navTab && TABNAME[navTab] ? TABNAME[navTab] : SCREENS[view].title === 'Logistics Warehouse' ? 'Home' : SCREENS[view].title);
+    markNav(view);
     // the copied Toolkit screens load when their section gets the "active" class
     Object.values(SCREENS).forEach(s => { const el = $(s.id); if (el) el.classList.toggle('active', s.id === SCREENS[view].id); });
 
@@ -91,12 +102,14 @@ window.TMApp = (function () {
     if (view === 'home') { greet(); refreshHub(); }
     if (view === 'timeoff') TMTimeOff.open();
     if (view === 'drivers') TMDrivers.open();
+    if (view === 'hours') TMDriverHours.open();
     if (view === 'messages') TMDriverMsgs.open();
     if (view === 'trailers') { showTab(mtab); if (!TSMgr.isLoaded()) TSMgr.load(); }
   }
   function refresh() {
     if (current === 'timeoff') return TMTimeOff.refresh();
     if (current === 'drivers') return TMDrivers.refresh();
+    if (current === 'hours') return TMDriverHours.refresh();
     if (current === 'messages') return TMDriverMsgs.reload();
     if (current === 'trailers' && !$('scrMgr').hidden) {
       if (mtab === 'insp') return TSMgr.load();
@@ -104,7 +117,6 @@ window.TMApp = (function () {
       return TSReports.refresh(mtab);
     }
     if (current === 'dispatch') return $('ybLoad').click();
-    if (current === 'timesheets') return $('stLoadBtn').click();
     if (current === 'fuel') return $('fbRefresh').click();
     if (current === 'surcharge') return $('fscRefresh').click();
     refreshHub();
@@ -118,8 +130,8 @@ window.TMApp = (function () {
   }
   function setBadge(which, n) {
     const b = $('badge' + which.charAt(0).toUpperCase() + which.slice(1));
-    if (!b) return;
-    b.textContent = n; b.hidden = !n;
+    if (b) { b.textContent = n; b.hidden = !n; }
+    document.querySelectorAll('[data-badge="' + which + '"]').forEach(x => { x.textContent = n; x.hidden = !n; });
   }
   async function refreshHub() {
     renderSign();
@@ -160,10 +172,15 @@ window.TMApp = (function () {
 
   /* ---------- wiring ---------- */
   // Links are also written into index.html, so they work even if an older config.js is cached
-  if (CFG.PTO_MANAGER_URL) $('ptoLink').href = CFG.PTO_MANAGER_URL;
-  if (CFG.TRACKING_URL) $('trackLink').href = CFG.TRACKING_URL;
+  if (CFG.PTO_MANAGER_URL) { $('ptoLink').href = CFG.PTO_MANAGER_URL; document.querySelectorAll('[data-cfg="pto"]').forEach(a => a.href = CFG.PTO_MANAGER_URL); }
+  if (CFG.TRACKING_URL) { $('trackLink').href = CFG.TRACKING_URL; document.querySelectorAll('[data-cfg="track"]').forEach(a => a.href = CFG.TRACKING_URL); }
+  // phone: Menu opens the left menu
+  $('navToggle').onclick = () => { const on = document.body.classList.toggle('side-open'); $('navToggle').setAttribute('aria-expanded', on ? 'true' : 'false'); };
+  // home clock (like the Driver Toolkit)
+  const tick = () => { const t = $('hubTime'); if (t) t.textContent = new Date().toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit', second: '2-digit' }); };
+  tick(); setInterval(tick, 1000);
   document.addEventListener('click', e => {
-    const g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); open(g.dataset.go); return; }
+    const g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); navTab = null; if (g.dataset.go === 'messages' && g.closest('.tm-side,.lw-navbar')) TMDriverMsgs.tab('inbox'); open(g.dataset.go); return; }
     const s = e.target.closest('[data-signout]');
     if (s) {
       if (s.dataset.signout === 'timeoff') { if (confirm('Sign out of Time Off?')) TMTimeOff.signOut(); }
@@ -189,7 +206,7 @@ window.TMApp = (function () {
   });
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 
-  return { open, refreshHub, setBadge, sessionExpired, managerName: () => TMTimeOff.name() };
+  return { open, refreshHub, setBadge, sessionExpired, setNavTab, managerName: () => TMTimeOff.name() };
 })();
 // core.js looks for TSApp.sessionExpired
 window.TSApp = { sessionExpired: () => TMApp.sessionExpired(), setSub: () => {}, showSwitch: () => {} };

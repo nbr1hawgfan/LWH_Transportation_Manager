@@ -13,30 +13,69 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="manager.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="theme.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="tb-left">
-      <button class="tb-mark" id="btnHome" aria-label="Home">LW</button>
-      <div>
-        <div class="tb-title"><span class="tb-long">Transportation Manager</span><span class="tb-short">LWH Manager</span></div>
-        <div class="tb-sub" id="tbSub">Logistics Warehouse</div>
-      </div>
-    </div>
-    <div class="tb-right">
-      <button class="tb-btn tb-text" id="btnBack" hidden>‹ Home</button>
-      <button class="tb-btn" id="btnInstall" hidden aria-label="Install app" title="Install app">⤓</button>
-      <button class="tb-btn" id="btnRefresh" title="Refresh" aria-label="Refresh">⟳</button>
-    </div>
+  <div class="lw-topbar">
+    <a href="tel:14794102611"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg><b>1-479-410-2611</b></a>
+    <span class="lw-tb-addr"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>700 Fresno Street, HQ</span>
+    <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Mon–Fri: 8AM–5PM</span>
+  </div>
+  <header class="topbar lw-header">
+    <button class="lw-brand" id="btnHome" aria-label="Home">
+      <span class="lw-logo"></span>
+      <span class="lw-brand-text"><span class="lw-title">Logistics Warehouse</span><span class="lw-sub">Transportation Manager <i>·</i> <b id="tbSub">Home</b></span></span>
+    </button>
+    <span class="lw-pill"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Manager App</span>
   </header>
+  <nav class="lw-navbar" aria-label="Shortcuts">
+    <button type="button" id="navToggle" class="lw-nav-menu" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Menu</button>
+    <button type="button" class="lw-nav-link" data-nav="home" data-go="home">Home</button>
+    <button type="button" class="lw-nav-link" data-nav="timeoff" data-go="timeoff">Unpaid Time Off</button>
+    <button type="button" class="lw-nav-link" data-nav="hours" data-go="hours">Driver Hours</button>
+    <button type="button" class="lw-nav-link" data-nav="tab:clock" data-att-tab="clock">Time Clock</button>
+    <button type="button" class="lw-nav-link" data-nav="messages" data-go="messages">Driver Messages</button>
+    <button type="button" class="lw-nav-link" data-nav="drivers" data-go="drivers">Drivers</button>
+    <button type="button" class="lw-nav-link" data-nav="dispatch" data-go="dispatch">Dispatch Board</button>
+    <span class="lw-nav-right">
+      <button class="lw-nav-btn" id="btnBack" hidden>‹ Home</button>
+      <button class="lw-nav-btn" id="btnInstall" hidden title="Install app"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg><span>Install App</span></button>
+      <button class="lw-nav-btn" id="btnRefresh" title="Refresh"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg><span>Refresh</span></button>
+    </span>
+  </nav>
 
+
+  <div class="tm-shell">
+    <nav class="tm-side" id="tmSide" aria-label="Sections">
+      <button type="button" class="side-btn" data-nav="home" data-go="home"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg><span>Home</span></button>
+      <div class="side-h">Approvals</div>
+      <button type="button" class="side-btn" data-nav="timeoff" data-go="timeoff"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3M8 14h8"/></svg><span>Unpaid Time Off</span><span class="side-badge" data-badge="timeoff" hidden>0</span></button>
+      <a class="side-btn" data-cfg="pto" href="https://nbr1hawgfan.github.io/LWH_PTO/manager/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3"/><path d="m8.5 14.5 2.5 2.5 4.5-5"/></svg><span>PTO Approvals</span><em>↗</em></a>
+      <div class="side-h">Team</div>
+      <button type="button" class="side-btn" data-nav="drivers" data-go="drivers"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.2c2.1.7 3.5 2.6 3.5 5.8"/></svg><span>Drivers</span></button>
+      <button type="button" class="side-btn" data-nav="hours" data-go="hours"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3M7 13h3M12 13h3M7 17h3M12 17h3"/></svg><span>Driver Hours</span></button>
+      <button type="button" class="side-btn" data-nav="tab:clock" data-att-tab="clock"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Time Clock</span></button>
+      <button type="button" class="side-btn" data-nav="tab:cards" data-att-tab="cards"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="1.5"/><path d="M13.5 9h2.5v2.5h-2.5zM5.5 10h5M5.5 13h3.5"/></svg><span>Time Clock Cards</span></button>
+      <button type="button" class="side-btn" data-nav="messages" data-go="messages"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg><span>Driver Messages</span><span class="side-badge" data-badge="messages" hidden>0</span></button>
+      <div class="side-h">Trailers</div>
+      <button type="button" class="side-btn" data-nav="trailers" data-go="trailers"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="15" height="10"/><circle cx="6" cy="18" r="2"/><circle cx="13" cy="18" r="2"/><path d="m16 11 2 2 4-4"/></svg><span>Trailer Inspections</span></button>
+      <a class="side-btn" data-cfg="track" href="https://nbr1hawgfan.github.io/LWH_Driver-and-Trailer-Tracking/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Driver &amp; Trailer Tracking</span><em>↗</em></a>
+      <div class="side-h">Dispatch</div>
+      <button type="button" class="side-btn" data-nav="dispatch" data-go="dispatch"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16"/><path d="M3 9h18M9 9v11M12 13h6M12 16.5h4"/></svg><span>Dispatch Board</span></button>
+      <button type="button" class="side-btn" data-nav="fuel" data-go="fuel"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg><span>Fuel Prices</span></button>
+      <button type="button" class="side-btn" data-nav="surcharge" data-go="surcharge"><svg viewBox="0 0 24 24"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15M4 11h10M14 9h2.5L19 12v5a1 1 0 0 1-1 1h-1"/></svg><span>Fuel Surcharge</span></button>
+    </nav>
   <main>
     <!-- HOME -->
     <section class="screen" id="scrHome">
       <div class="wrap">
-        <div class="hub-hello">
+        <div class="hub-hello hero">
+          <span class="hero-division">Transportation Division</span>
           <h1 class="page-h" id="hubHello">Good morning</h1>
-          <div class="muted" id="hubWx">Logistics Warehouse · Transportation</div>
+          <div class="hero-wx" id="hubWx">Logistics Warehouse · Transportation</div>
+          <div class="hero-time" id="hubTime"></div>
         </div>
         <div class="hub-sec">Needs attention</div>
         <div class="hub-attn" id="hubAttn"></div>
@@ -63,6 +102,10 @@
           <button class="hub-tile" data-go="drivers">
             <span class="hub-ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.2c2.1.7 3.5 2.6 3.5 5.8"/></svg></span>
             <span class="hub-t"><b>Drivers</b><span>The one driver list for every app — add drivers, fix names, locations, mark who's left.</span></span>
+          </button>
+          <button class="hub-tile" data-go="hours">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3M7 13h3M12 13h3M7 17h3M12 17h3"/></svg></span>
+            <span class="hub-t"><b>Driver Hours</b><span>The Driver Hours tool's week — Samsara and time clock hours, Reg / OT, PTO, red flags.</span></span>
           </button>
           <button class="hub-tile" data-att-tab="clock">
             <span class="hub-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
@@ -91,10 +134,6 @@
             <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16"/><path d="M3 9h18M9 9v11M12 13h6M12 16.5h4"/></svg></span>
             <span class="hub-t"><b>Dispatch Board</b><span>Yard checks by day, trailers on each yard, find a trailer, and driver recruiting.</span></span>
           </button>
-          <button class="hub-tile" data-go="timesheets">
-            <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3M7 13h3M12 13h3M7 17h3"/></svg></span>
-            <span class="hub-t"><b>All Timesheets</b><span>Search and print any driver's synced weekly hours.</span></span>
-          </button>
           <button class="hub-tile" data-go="fuel">
             <span class="hub-ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span>
             <span class="hub-t"><b>Fuel Prices</b><span>Weekly diesel and gas prices by region, trends, and a summary to share with customers.</span></span>
@@ -105,6 +144,32 @@
           </button>
         </div>
         <div class="hub-sign" id="hubSign"></div>
+      </div>
+    </section>
+
+    <!-- DRIVER HOURS (read-only copy of the Driver Hours tool) -->
+    <section class="screen" id="scrHours" hidden>
+      <div class="wrap">
+        <div class="dh-head">
+          <div><h1 class="page-h">Driver Hours</h1>
+            <p class="muted">Same week as the Driver Hours tool: Samsara fills worked hours overnight, the time clock fills spotters' days. Read only — change hours in the Driver Hours tool, or fix punches on the Time Clock.</p></div>
+        </div>
+        <div class="dh-layout">
+          <div class="dh-main">
+            <div class="dh-bar">
+              <button type="button" class="btn outline sm" id="dhPrev" aria-label="Last week">‹</button>
+              <b id="dhWeek">This week</b>
+              <button type="button" class="btn outline sm" id="dhNext" aria-label="Next week">›</button>
+              <input type="date" id="dhDate" aria-label="Week of">
+              <button type="button" class="btn outline sm" id="dhThis">This week</button>
+              <span class="dh-appr" id="dhAppr"></span>
+            </div>
+            <p class="muted dh-status" id="dhStatus"></p>
+            <div id="dhOut"></div>
+          </div>
+          <aside class="dh-side"><div class="dh-side-h">Day detail</div><div id="dhDetail"></div>
+            <div class="dh-side-h" style="margin-top:18px">Weeks</div><div id="dhWeeks"></div></aside>
+        </div>
       </div>
     </section>
 
@@ -396,23 +461,6 @@
       <div id="ybResults"></div>
       </div>
     </section>
-    <section id="spotterTimesheets" class="screen tk" hidden>
-      <div class="wrap wide">
-      <div class="tool-layout wide">
-        <form class="panel no-print" id="spotterTimesheetsForm" onsubmit="return false">
-          <h2>All Timesheets</h2>
-          <p class="hint">Weekly hours synced from every driver's Weekly Timesheet tool. Search by driver name, location, or week (YYYY-MM-DD of the Sunday).</p>
-          <label>Search<input id="stSearch" placeholder="Driver name, location, or week start date..." autocomplete="off" /></label>
-          <div class="grid-2"><button type="button" id="stSearchBtn">Search</button><button type="button" id="stLoadBtn" class="ghost">Load / Refresh Data</button></div>
-          <button type="button" id="stClearBtn" class="ghost" style="margin-top:8px;width:100%">Clear</button>
-          <div class="grid-2" style="margin-top:8px"><button type="button" id="stCsvBtn" class="ghost">Export CSV</button><button type="button" id="stPrintBtn" class="ghost">Print Table</button></div>
-          <div id="stStatus" class="hint">Timesheets not loaded yet — searching will load them automatically.</div>
-        </form>
-        <div><div id="stResults" class="results no-print"></div></div>
-      </div>
-      <div id="stPrintTable" class="print-area"></div>
-      </div>
-    </section>
     <section id="fuelboard" class="screen tk" hidden>
       <div class="wrap wide">
       <div class="card">
@@ -478,6 +526,7 @@
       </div>
     </section>
   </main>
+  </div>
 
   <dialog id="drvModal" class="tm-modal">
     <div class="tm-modal-h"><b id="drvModalTitle">Driver</b><button class="tb-btn" id="drvModalClose" aria-label="Close">✕</button></div>
@@ -550,11 +599,11 @@
   <script src="js/map.js"></script>
   <script src="js/yardboard.js"></script>
   <script src="js/recruitboard.js"></script>
-  <script src="js/spottertimesheets.js"></script>
   <script src="js/fuelboard.js"></script>
   <script src="js/fsc.js"></script>
   <script src="js/drivers.js"></script>
   <script src="js/drivermsgs.js"></script>
+  <script src="js/driverhours.js"></script>
   <script src="js/attention.js"></script>
   <script src="js/app.js"></script>
 <!-- LWH-USAGE-START: anonymous app-usage ping (see hub.logisticswarehouse.net/usage/) -->

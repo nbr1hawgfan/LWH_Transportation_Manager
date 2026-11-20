@@ -49,6 +49,7 @@ window.TMAttention = (function () {
     const b = e.target.closest('[data-att-tab],[data-att-go]'); if (!b) return;
     if (b.dataset.attGo) return TMApp.open(b.dataset.attGo);
     TMDriverMsgs.tab(b.dataset.attTab);
+    TMApp.setNavTab(b.dataset.attTab);
     TMApp.open('messages');
   });
   // The Message Center tells us when the manager reads, reviews or signs in — refresh soon after.
