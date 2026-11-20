@@ -31,6 +31,7 @@ window.TMAttention = (function () {
     if (a) {
       if (a.msgs_unread) cards.push({ n: a.msgs_unread, t: 'unread driver messages', lv: 'bad', tab: 'inbox' });
       else if (a.msgs_open) cards.push({ n: a.msgs_open, t: 'driver messages not marked handled', lv: 'info', tab: 'inbox' });
+      if (a.tc_review) cards.push({ n: a.tc_review, t: 'time clock days to fix', sub: 'Missing clock-in/out or over 14 hrs. Fix before approving payroll.', lv: 'bad', tab: 'clock' });
       if (a.pods_unreviewed) cards.push({ n: a.pods_unreviewed, t: 'PODs not reviewed', lv: 'warn', tab: 'pods' });
       if (a.sites_pending) cards.push({ n: a.sites_pending, t: 'site note suggestions to approve', lv: 'warn', tab: 'sites' });
       if (a.no_pin) cards.push({ n: a.no_pin, t: "drivers who can't sign in yet", sub: 'No PTO PIN and no Toolkit PIN', lv: 'info', tab: 'pins' });
