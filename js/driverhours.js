@@ -43,6 +43,11 @@ window.TMDriverHours = (function () {
     const we = new Date(ws); we.setDate(we.getDate() + 6);
     $('dhWeek').textContent = ws.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' – ' + we.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
     $('dhDate').value = r.week_start;
+    const wk = r.week || {};
+    $('dhAppr').className = 'dh-appr ' + (wk.approved ? 'yes' : 'no');
+    $('dhAppr').textContent = wk.approved ? 'Approved' : 'Open';
+    $('dhAppr').title = wk.approved ? `Approved by ${wk.approved_by || ''}${wk.approved_at ? ', ' + new Date(wk.approved_at).toLocaleString() : ''}` : (wk.unapproved_by ? `Un-approved by ${wk.unapproved_by}` : 'Not approved yet');
+    weeksList(r);
     const s = r.synced;
     $('dhStatus').innerHTML = s && s.at
       ? `Copied from the Driver Hours tool ${esc(new Date(s.at).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}. Updates every 15 minutes, 5 AM–8 PM.`
@@ -52,7 +57,7 @@ window.TMDriverHours = (function () {
     const groups = {};
     (r.drivers || []).forEach(d => {
       const by = {}; (d.days || []).forEach(x => { by[x.date] = x; });
-      const has = (d.days || []).some(x => num(x.hours) || num(x.pto) || num(x.hol) || x.review || x.note);
+      const has = (d.days || []).some(x => num(x.hours) || num(x.pto) || num(x.hol) || x.review || x.note) || !!(d.week_note && d.week_note.note);
       if (!has && !d.active) return;
       (groups[d.grp] = groups[d.grp] || []).push({ d, by, has });
     });
@@ -76,14 +81,26 @@ window.TMDriverHours = (function () {
         }).join('');
         const reg = Math.min(40, worked), ot = Math.max(0, worked - 40), tot = worked + pto + hol;
         return `<tr><th class="dh-name"><b>${esc(d.name)}</b><span>${esc(d.driver_id)}${d.goes_by && d.goes_by !== d.name ? ' · goes by ' + esc(d.goes_by) : ''}</span></th>${cells}
-          <td class="dh-n">${worked ? f2(reg) : ''}</td><td class="dh-n ot">${ot ? f2(ot) : ''}</td><td class="dh-n">${pto ? f2(pto) : ''}</td><td class="dh-n">${hol ? f2(hol) : ''}</td><td class="dh-n tot">${tot ? f2(tot) : ''}</td></tr>`;
+          <td class="dh-n">${worked ? f2(reg) : ''}</td><td class="dh-n ot">${ot ? f2(ot) : ''}</td><td class="dh-n">${pto ? f2(pto) : ''}</td><td class="dh-n">${hol ? f2(hol) : ''}</td><td class="dh-n tot">${tot ? f2(tot) : ''}</td>
+          <td class="dh-wn">${d.week_note && d.week_note.note ? `<span title="${esc((d.week_note.by ? d.week_note.by : '') + (d.week_note.at ? ', ' + new Date(d.week_note.at).toLocaleString() : ''))}">${esc(d.week_note.note)}</span>` : ''}</td></tr>`;
       }).join('');
-      return `<tr class="dh-grp"><td colspan="13">${esc(g)} (${list.length})</td></tr>${rows}`;
+      return `<tr class="dh-grp"><td colspan="14">${esc(g)} (${list.length})</td></tr>${rows}`;
     }).join('');
     $('dhOut').innerHTML = (review ? `<div class="dh-warn">${review} day${review > 1 ? 's' : ''} in red need checking (Samsara over 14 hours, or a missing clock-in/out). Fix them in the Driver Hours tool — or fix the punches on the Time Clock — before approving.</div>` : '')
-      + `<div class="dh-wrap"><table class="dh"><thead><tr><th class="dh-name">Driver</th>${head}<th>Reg</th><th>OT</th><th>PTO</th><th>Hol</th><th>Total</th></tr></thead><tbody>${body || '<tr><td colspan="13" class="dh-empty">No hours this week.</td></tr>'}</tbody></table></div>`
+      + `<div class="dh-wrap"><table class="dh"><thead><tr><th class="dh-name">Driver</th>${head}<th>Reg</th><th>OT</th><th>PTO</th><th>Hol</th><th>Total</th><th class="dh-wn">Week note<small>shows on the HR report</small></th></tr></thead><tbody>${body || '<tr><td colspan="14" class="dh-empty">No hours this week.</td></tr>'}</tbody></table></div>`
       + `<p class="dh-key"><span class="dh-box rev"></span> needs checking · <b>C</b> from the time clock · <b>S 9.15</b> what Samsara showed when the hours were changed · <b>N</b> has a note · Reg / OT = first 40 worked hours / over 40. Tap a day for the details.</p>`;
     if (st.sel) detail(st.sel); else $('dhDetail').innerHTML = '<p class="muted">Tap a day to see the time clock punches, what Samsara showed, and any note.</p>';
+  }
+
+  function weeksList(r) {
+    const box = $('dhWeeks'); if (!box) return;
+    const cur = sunday(iso(new Date()));
+    box.innerHTML = (r.weeks || []).map(w => {
+      const a = new Date(w.week_start + 'T00:00:00'), b = new Date(a); b.setDate(b.getDate() + 6);
+      const lbl = a.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' – ' + (a.getMonth() === b.getMonth() ? b.getDate() : b.toLocaleDateString([], { month: 'short', day: 'numeric' }));
+      const tag = w.week_start === cur ? 'this week' : w.approved ? 'approved' : 'open';
+      return `<button type="button" class="dh-wk${w.week_start === r.week_start ? ' on' : ''}" data-dh-week="${w.week_start}"><span>${esc(lbl)}</span><em class="${w.approved ? 'ok' : ''}">${tag}</em></button>`;
+    }).join('');
   }
 
   function detail(key) {
@@ -109,7 +126,10 @@ window.TMDriverHours = (function () {
   }
 
   function shift(n) { const d = new Date(st.week + 'T00:00:00'); d.setDate(d.getDate() + 7 * n); st.week = iso(d); st.sel = null; load(); }
-  document.addEventListener('click', e => { const b = e.target.closest('[data-dh]'); if (b) detail(b.dataset.dh); });
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-dh]'); if (b) return detail(b.dataset.dh);
+    const w = e.target.closest('[data-dh-week]'); if (w) { st.week = w.dataset.dhWeek; st.sel = null; load(); }
+  });
   window.addEventListener('load', () => {
     if (!$('scrHours')) return;
     $('dhPrev').onclick = () => shift(-1);
