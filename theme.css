@@ -89,3 +89,47 @@ main { min-height: 0; min-width: 0; }
 }
 @media print { .lw-topbar, .lw-navbar, .tm-side, .topbar.lw-header { display: none !important; } .tm-shell { display: block; padding: 0; } }
 @media (min-width: 1001px) { #btnBack { display: none !important; } }
+
+/* Driver Hours (v2.1.0) — looks like the Driver Hours tool */
+.dh-head .page-h { font-family: var(--oswald); font-weight: 600; text-transform: uppercase; }
+.dh-layout { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 16px; align-items: start; }
+.dh-main { background: #fff; border: 1px solid var(--line); border-top: 5px solid var(--red); padding: 14px; min-width: 0; }
+.dh-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.dh-bar b { font-size: 20px; min-width: 190px; text-align: center; }
+.dh-bar input { width: auto; min-height: 38px; }
+.dh-status { margin: 10px 0; font-size: 13.5px; }
+.dh-wrap { overflow-x: auto; }
+table.dh { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 14px; }
+table.dh thead th { background: #1c1c1c; color: #fff; font-weight: 800; padding: 8px 6px; text-align: center; border-bottom: 3px solid var(--red); }
+table.dh thead th small { display: block; font-weight: 600; opacity: .8; font-size: 11.5px; }
+table.dh th.dh-name { text-align: left; min-width: 170px; }
+table.dh tbody th.dh-name { background: #fff; color: var(--ink); font-weight: 400; padding: 8px 6px; border-bottom: 1px solid var(--line-2); }
+.dh-name b { display: block; font-size: 15px; }
+.dh-name span { font-size: 11.5px; color: var(--muted); }
+.dh-grp td { background: #eee; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; font-size: 12.5px; padding: 7px 8px; }
+td.dh-c { text-align: center; padding: 6px 4px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+td.dh-c small { display: block; font-size: 10.5px; color: var(--muted); margin-top: 2px; white-space: nowrap; }
+.dh-box { display: inline-block; width: 64px; min-height: 34px; line-height: 32px; border: 1px solid #c9c9c9; background: #fff; font: 600 15px/32px inherit; color: var(--ink); text-align: right; padding: 0 7px; cursor: pointer; }
+span.dh-box { cursor: default; }
+.dh-box.rev { background: #fde2e2; border-color: var(--red); color: var(--red); font-weight: 900; }
+.dh-box.typed { background: #fff8e1; }
+.dh-box.on { outline: 3px solid #111; }
+td.dh-n { text-align: right; font-weight: 700; padding: 8px 6px; border-bottom: 1px solid var(--line-2); }
+td.dh-n.ot { color: var(--red); }
+td.dh-n.tot { font-weight: 900; }
+.dh-empty { padding: 20px; text-align: center; color: var(--muted); }
+.dh-key { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; }
+.dh-key .dh-box { width: 22px; min-height: 14px; line-height: 14px; vertical-align: middle; }
+.dh-warn { background: #fdeaea; color: var(--red); border-left: 5px solid var(--red); padding: 9px 12px; font-weight: 700; margin-bottom: 10px; }
+.dh-warn.sm { font-size: 13px; padding: 5px 8px; margin: 8px 0; }
+.dh-side { position: sticky; top: 74px; background: #fff; border: 1px solid var(--line); padding: 14px; }
+.dh-side-h { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 10px; }
+.dh-side h4 { margin: 0; font-size: 17px; }
+.dh-row { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line-2); font-size: 14px; }
+.dh-row span, .dh-punch span, .dh-note span { color: var(--muted); }
+.dh-punch, .dh-note { padding: 8px 0; font-size: 14px; border-bottom: 1px solid var(--line-2); }
+.dh-punch span, .dh-note span { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.dh-side .muted.sm { font-size: 12.5px; margin: 8px 0; }
+.dh-side .btn { margin-top: 10px; }
+.dh-sign { background: #fff; border: 1px solid var(--line); border-left: 5px solid var(--red); padding: 16px; }
+@media (max-width: 1200px) { .dh-layout { grid-template-columns: 1fr; } .dh-side { position: static; } }

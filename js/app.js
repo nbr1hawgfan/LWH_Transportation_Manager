@@ -10,6 +10,7 @@ window.TMApp = (function () {
     home:       { id: 'scrHome',           title: 'Logistics Warehouse' },
     timeoff:    { id: 'scrTimeOff',        title: 'Unpaid Time Off' },
     drivers:    { id: 'scrDrivers',        title: 'Drivers' },
+    hours:      { id: 'scrHours',          title: 'Driver Hours' },
     messages:   { id: 'scrMessages',       title: 'Driver Messages' },
     trailers:   { id: 'scrMgr',            title: 'Trailer Inspections' },
     dispatch:   { id: 'yardBoard',         title: 'Dispatch Board' },
@@ -101,12 +102,14 @@ window.TMApp = (function () {
     if (view === 'home') { greet(); refreshHub(); }
     if (view === 'timeoff') TMTimeOff.open();
     if (view === 'drivers') TMDrivers.open();
+    if (view === 'hours') TMDriverHours.open();
     if (view === 'messages') TMDriverMsgs.open();
     if (view === 'trailers') { showTab(mtab); if (!TSMgr.isLoaded()) TSMgr.load(); }
   }
   function refresh() {
     if (current === 'timeoff') return TMTimeOff.refresh();
     if (current === 'drivers') return TMDrivers.refresh();
+    if (current === 'hours') return TMDriverHours.refresh();
     if (current === 'messages') return TMDriverMsgs.reload();
     if (current === 'trailers' && !$('scrMgr').hidden) {
       if (mtab === 'insp') return TSMgr.load();

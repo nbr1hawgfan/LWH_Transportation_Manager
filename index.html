@@ -34,6 +34,7 @@
     <button type="button" id="navToggle" class="lw-nav-menu" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Menu</button>
     <button type="button" class="lw-nav-link" data-nav="home" data-go="home">Home</button>
     <button type="button" class="lw-nav-link" data-nav="timeoff" data-go="timeoff">Unpaid Time Off</button>
+    <button type="button" class="lw-nav-link" data-nav="hours" data-go="hours">Driver Hours</button>
     <button type="button" class="lw-nav-link" data-nav="tab:clock" data-att-tab="clock">Time Clock</button>
     <button type="button" class="lw-nav-link" data-nav="messages" data-go="messages">Driver Messages</button>
     <button type="button" class="lw-nav-link" data-nav="drivers" data-go="drivers">Drivers</button>
@@ -54,6 +55,7 @@
       <a class="side-btn" data-cfg="pto" href="https://nbr1hawgfan.github.io/LWH_PTO/manager/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3"/><path d="m8.5 14.5 2.5 2.5 4.5-5"/></svg><span>PTO Approvals</span><em>↗</em></a>
       <div class="side-h">Team</div>
       <button type="button" class="side-btn" data-nav="drivers" data-go="drivers"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.2c2.1.7 3.5 2.6 3.5 5.8"/></svg><span>Drivers</span></button>
+      <button type="button" class="side-btn" data-nav="hours" data-go="hours"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3M7 13h3M12 13h3M7 17h3M12 17h3"/></svg><span>Driver Hours</span></button>
       <button type="button" class="side-btn" data-nav="tab:clock" data-att-tab="clock"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Time Clock</span></button>
       <button type="button" class="side-btn" data-nav="tab:cards" data-att-tab="cards"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="1.5"/><path d="M13.5 9h2.5v2.5h-2.5zM5.5 10h5M5.5 13h3.5"/></svg><span>Time Clock Cards</span></button>
       <button type="button" class="side-btn" data-nav="messages" data-go="messages"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg><span>Driver Messages</span><span class="side-badge" data-badge="messages" hidden>0</span></button>
@@ -101,6 +103,10 @@
             <span class="hub-ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.2c2.1.7 3.5 2.6 3.5 5.8"/></svg></span>
             <span class="hub-t"><b>Drivers</b><span>The one driver list for every app — add drivers, fix names, locations, mark who's left.</span></span>
           </button>
+          <button class="hub-tile" data-go="hours">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3M7 13h3M12 13h3M7 17h3M12 17h3"/></svg></span>
+            <span class="hub-t"><b>Driver Hours</b><span>The Driver Hours tool's week — Samsara and time clock hours, Reg / OT, PTO, red flags.</span></span>
+          </button>
           <button class="hub-tile" data-att-tab="clock">
             <span class="hub-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
             <span class="hub-t"><b>Time Clock</b><span>Who's on the clock, every punch, the week's hours. Fix a missed or wrong punch.</span></span>
@@ -138,6 +144,30 @@
           </button>
         </div>
         <div class="hub-sign" id="hubSign"></div>
+      </div>
+    </section>
+
+    <!-- DRIVER HOURS (read-only copy of the Driver Hours tool) -->
+    <section class="screen" id="scrHours" hidden>
+      <div class="wrap">
+        <div class="dh-head">
+          <div><h1 class="page-h">Driver Hours</h1>
+            <p class="muted">Same week as the Driver Hours tool: Samsara fills worked hours overnight, the time clock fills spotters' days. Read only — change hours in the Driver Hours tool, or fix punches on the Time Clock.</p></div>
+        </div>
+        <div class="dh-layout">
+          <div class="dh-main">
+            <div class="dh-bar">
+              <button type="button" class="btn outline sm" id="dhPrev" aria-label="Last week">‹</button>
+              <b id="dhWeek">This week</b>
+              <button type="button" class="btn outline sm" id="dhNext" aria-label="Next week">›</button>
+              <input type="date" id="dhDate" aria-label="Week of">
+              <button type="button" class="btn outline sm" id="dhThis">This week</button>
+            </div>
+            <p class="muted dh-status" id="dhStatus"></p>
+            <div id="dhOut"></div>
+          </div>
+          <aside class="dh-side"><div class="dh-side-h">Day detail</div><div id="dhDetail"></div></aside>
+        </div>
       </div>
     </section>
 
@@ -571,6 +601,7 @@
   <script src="js/fsc.js"></script>
   <script src="js/drivers.js"></script>
   <script src="js/drivermsgs.js"></script>
+  <script src="js/driverhours.js"></script>
   <script src="js/attention.js"></script>
   <script src="js/app.js"></script>
 <!-- LWH-USAGE-START: anonymous app-usage ping (see hub.logisticswarehouse.net/usage/) -->
