@@ -30,6 +30,10 @@ window.TMAttention = (function () {
     if (a) {
       if (a.msgs_unread) cards.push({ n: a.msgs_unread, t: 'unread driver messages', lv: 'bad', tab: 'inbox' });
       else if (a.msgs_open) cards.push({ n: a.msgs_open, t: 'driver messages not marked handled', lv: 'info', tab: 'inbox' });
+      if (a.tc_long) {
+        const names = (a.tc_long_list || []).map(x => (x.name || x.driver_id).split(' ')[0]).slice(0, 4).join(', ');
+        cards.push({ n: a.tc_long, t: a.tc_long === 1 ? 'driver still clocked in 12+ hrs' : 'drivers still clocked in 12+ hrs', sub: (names ? names + ' — ' : '') + 'Forgot to clock out? Fix it on the Time Clock Board.', lv: 'bad', tab: 'clock' });
+      }
       if (a.tc_review) cards.push({ n: a.tc_review, t: 'time clock days to fix', sub: 'Missing clock-in/out or over 14 hrs. Fix before approving payroll.', lv: 'bad', tab: 'clock' });
       if (a.pods_unreviewed) cards.push({ n: a.pods_unreviewed, t: 'PODs not reviewed', lv: 'warn', tab: 'pods' });
       if (a.sites_pending) cards.push({ n: a.sites_pending, t: 'site note suggestions to approve', lv: 'warn', tab: 'sites' });
