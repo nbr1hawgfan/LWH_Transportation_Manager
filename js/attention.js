@@ -13,12 +13,12 @@ window.TMAttention = (function () {
 
   async function refresh() {
     const t = (() => { try { return localStorage.getItem('lwhdispatch_token') || ''; } catch (e) { return ''; } })();
-    if (!t) { a = null; state = 'signin'; return render(); }
+    if (!t) { a = null; state = 'signin'; if (window.TMGate && TMGate.signedIn()) TMGate.check(); return render(); }
     try {
       const r = await fetch(API + 'tm_attention', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_token: t }), cache: 'no-store' });
       const j = await r.json();
       if (j && j.ok) { a = j; state = 'ok'; }
-      else { a = null; state = j && j.error === 'not_manager' ? 'notmgr' : 'signin'; }
+      else { a = null; state = j && j.error === 'not_manager' ? 'notmgr' : 'signin'; if (window.TMGate && TMGate.signedIn()) TMGate.check(); }
     } catch (e) { state = a ? 'ok' : 'offline'; }
     render();
   }
