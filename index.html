@@ -38,7 +38,6 @@
   <nav class="lw-navbar" aria-label="Shortcuts">
     <button type="button" id="navToggle" class="lw-nav-menu" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Menu</button>
     <button type="button" class="lw-nav-link" data-nav="home" data-go="home">Home</button>
-    <button type="button" class="lw-nav-link" data-nav="timeoff" data-go="timeoff">Unpaid Time Off</button>
     <button type="button" class="lw-nav-link" data-nav="hours" data-go="hours">Driver Hours</button>
     <button type="button" class="lw-nav-link" data-nav="tab:clock" data-att-tab="clock">Time Clock</button>
     <button type="button" class="lw-nav-link" data-nav="messages" data-go="messages">Driver Messages</button>
@@ -58,7 +57,6 @@
     <nav class="tm-side" id="tmSide" aria-label="Sections">
       <button type="button" class="side-btn" data-nav="home" data-go="home"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg><span>Home</span></button>
       <div class="side-h">Approvals</div>
-      <button type="button" class="side-btn" data-nav="timeoff" data-go="timeoff"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3M8 14h8"/></svg><span>Unpaid Time Off</span><span class="side-badge" data-badge="timeoff" hidden>0</span></button>
       <a class="side-btn" data-cfg="pto" href="https://nbr1hawgfan.github.io/LWH_PTO/manager/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3"/><path d="m8.5 14.5 2.5 2.5 4.5-5"/></svg><span>PTO Approvals</span><em>↗</em></a>
       <div class="side-h">Team</div>
       <button type="button" class="side-btn" data-nav="drivers" data-go="drivers"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.2c2.1.7 3.5 2.6 3.5 5.8"/></svg><span>Drivers</span></button>
@@ -89,11 +87,6 @@
         <div class="hub-attn" id="hubAttn"></div>
         <div class="hub-sec">Approvals</div>
         <div class="hub-grid">
-          <button class="hub-tile" data-go="timeoff">
-            <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3M8 14h8"/></svg></span>
-            <span class="hub-t"><b>Unpaid Time Off</b><span>Approve or deny driver requests, see who's out and each driver's history.</span></span>
-            <span class="hub-badge" id="badgeTimeoff" hidden>0</span>
-          </button>
           <a class="hub-tile" id="ptoLink" href="https://nbr1hawgfan.github.io/LWH_PTO/manager/" target="_blank" rel="noopener">
             <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17"/><path d="M3 9h18M8 3v3M16 3v3"/><path d="m8.5 14.5 2.5 2.5 4.5-5"/></svg></span>
             <span class="hub-t"><b>PTO Approvals</b><span>Opens the PTO Manager app — approvals, team calendar, asks.</span></span>
@@ -222,79 +215,10 @@
             </table>
           </div>
         </div>
-        <p class="muted drv-note">Changes reach the payroll timecard, Unpaid Time Off and the trailer inspection list within the hour. Pay rates are never shown here — they stay in the payroll Sheet. New drivers get a Driver Toolkit sign-in code in Driver Messages → Driver Sign-in; marking someone Inactive signs them out of messages. <button class="linkish" id="drvSignOut">Sign out</button></p>
+        <p class="muted drv-note">Changes reach the payroll timecard and the trailer inspection list within the hour. Pay rates are never shown here — they stay in the payroll Sheet. New drivers get a Driver Toolkit sign-in code in Driver Messages → Driver Sign-in; marking someone Inactive signs them out of messages. <button class="linkish" id="drvSignOut">Sign out</button></p>
       </div>
     </section>
 
-    <section class="screen" id="scrTimeOff" hidden>
-      <div class="wrap narrow" id="toLogin">
-        <div class="card">
-          <div class="card-h">Unpaid Time Off</div>
-          <div class="card-b center">
-            <p class="muted">Enter your time off manager PIN</p>
-            <div class="pin-dots" id="toPinDots"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-            <div class="keypad" id="toKeypad">
-              <button>1</button><button>2</button><button>3</button>
-              <button>4</button><button>5</button><button>6</button>
-              <button>7</button><button>8</button><button>9</button>
-              <button data-k="clr">CLR</button><button>0</button><button data-k="go" class="kp-go">Enter</button>
-            </div>
-            <div class="pin-err" id="toPinErr"></div>
-          </div>
-        </div>
-        <button class="link-back" data-go="home">← Home</button>
-      </div>
-
-      <div id="toPanel" hidden>
-        <div class="tabs scroll" id="toTabs">
-          <button class="tab active" data-sub="pending">Pending <span class="to-count" id="toPendCount" hidden>0</span></button>
-          <button class="tab" data-sub="upcoming">Who's Out</button>
-          <button class="tab" data-sub="drivers">Drivers</button>
-          <button class="tab" data-sub="all">All Requests</button>
-        </div>
-        <div class="wrap">
-          <div class="to-whobar"><span class="muted" id="toWho"></span><button class="btn outline sm" id="toSignOut">Sign out</button></div>
-          <div class="to-sub" id="toSub-pending"><div id="toPendList"></div></div>
-          <div class="to-sub" id="toSub-upcoming" hidden>
-            <p class="muted">Approved time off for the next 30 days.</p>
-            <div id="toUpList"></div>
-          </div>
-          <div class="to-sub" id="toSub-drivers" hidden>
-            <div class="filters">
-              <div class="f grow"><label class="lbl">Search</label><input type="search" id="toDrvSearch" placeholder="Driver name"></div>
-              <div class="f"><label class="lbl">Year</label><select id="toDrvYear"></select></div>
-              <div class="f f-btns"><button class="btn dark sm" data-go="drivers">Manage drivers</button></div>
-            </div>
-            <div class="panel">
-              <div class="panel-h"><span>Drivers</span><span class="muted-l">Tap a driver for full history</span></div>
-              <div class="table-wrap">
-                <table class="tbl" id="toDrvTable">
-                  <thead><tr>
-                    <th data-sort="name">Driver</th>
-                    <th data-sort="occ" title="Approved requests">Occ.</th>
-                    <th data-sort="days" title="Approved full days">Days</th>
-                    <th data-sort="hours" title="Approved partial-day hours">Hrs</th>
-                    <th data-sort="r90" title="Approved occurrences, rolling 90 days">90 days</th>
-                    <th data-sort="denied">Denied</th>
-                    <th data-sort="last">Last</th>
-                  </tr></thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-            </div>
-            <p class="muted">Occurrence = one approved request.</p>
-          </div>
-          <div class="to-sub" id="toSub-all" hidden>
-            <div class="filters">
-              <div class="f grow"><label class="lbl">Search</label><input type="search" id="toAllSearch" placeholder="Name, reason, ID"></div>
-              <div class="f"><label class="lbl">Status</label><select id="toAllStatus"><option value="">All statuses</option><option>Pending</option><option>Approved</option><option>Denied</option><option>Cancelled</option></select></div>
-              <div class="f f-btns"><button class="btn dark sm" id="toCsv">Export CSV</button></div>
-            </div>
-            <div id="toAllList"></div>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <!-- MANAGER: PIN -->
     <!-- DRIVER MESSAGES — the Driver Message Center, shown inside this app -->
@@ -601,7 +525,6 @@
   <script src="config.js"></script>
   <script src="js/core.js"></script>
   <script src="js/compat.js"></script>
-  <script src="js/timeoff.js"></script>
   <script src="js/mgr.js"></script>
   <script src="js/reports.js"></script>
   <script src="js/map.js"></script>

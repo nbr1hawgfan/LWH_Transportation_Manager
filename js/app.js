@@ -8,7 +8,6 @@ window.TMApp = (function () {
 
   const SCREENS = {
     home:       { id: 'scrHome',           title: 'Logistics Warehouse' },
-    timeoff:    { id: 'scrTimeOff',        title: 'Unpaid Time Off' },
     drivers:    { id: 'scrDrivers',        title: 'Drivers' },
     hours:      { id: 'scrHours',          title: 'Driver Hours' },
     messages:   { id: 'scrMessages',       title: 'Driver Messages' },
@@ -100,14 +99,12 @@ window.TMApp = (function () {
     if (view === 'trailers' && !state.mgrToken) return showPin();
     screen(SCREENS[view].id);
     if (view === 'home') { greet(); refreshHub(); }
-    if (view === 'timeoff') TMTimeOff.open();
     if (view === 'drivers') TMDrivers.open();
     if (view === 'hours') TMDriverHours.open();
     if (view === 'messages') TMDriverMsgs.open();
     if (view === 'trailers') { showTab(mtab); if (!TSMgr.isLoaded()) TSMgr.load(); }
   }
   function refresh() {
-    if (current === 'timeoff') return TMTimeOff.refresh();
     if (current === 'drivers') return TMDrivers.refresh();
     if (current === 'hours') return TMDriverHours.refresh();
     if (current === 'messages') return TMDriverMsgs.reload();
@@ -125,7 +122,7 @@ window.TMApp = (function () {
   /* ---------- home ---------- */
   function greet() {
     const h = new Date().getHours();
-    const name = (TMTimeOff.name() || '').split(' ')[0];
+    const name = ((window.TMGate && TMGate.me() && TMGate.me().name) || '').split(' ')[0];
     $('hubHello').textContent = (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + (name ? ', ' + name : '');
   }
   function setBadge(which, n) {
@@ -137,16 +134,12 @@ window.TMApp = (function () {
     renderSign();
     TMDriverMsgs.peek();
     TMAttention.refresh();
-    const n = await TMTimeOff.peek();
-    if (n !== null) setBadge('timeoff', n);
-    TMAttention.setTimeoff(TMTimeOff.signedIn() ? (n || 0) : 0);
+    greet();
   }
   function renderSign() {
     const parts = [];
-    if (TMTimeOff.signedIn()) parts.push(`Time Off: signed in as <b>${TS.esc(TMTimeOff.name())}</b> <button class="btn outline sm" data-signout="timeoff">Sign out</button>`);
     if (state.mgrToken) parts.push('Trailers: signed in <button class="btn outline sm" data-signout="trailers">Sign out</button>');
     $('hubSign').innerHTML = parts.length ? parts.map(p => `<div>${p}</div>`).join('') : '';
-    if (!TMTimeOff.signedIn()) setBadge('timeoff', 0);
   }
   function weather() {
     const names = { 0: 'Clear', 1: 'Mostly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Fog', 51: 'Drizzle', 53: 'Drizzle', 55: 'Drizzle', 61: 'Light rain', 63: 'Rain', 65: 'Heavy rain', 71: 'Light snow', 73: 'Snow', 75: 'Heavy snow', 80: 'Showers', 81: 'Showers', 82: 'Heavy showers', 95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Thunderstorm' };
@@ -182,8 +175,7 @@ window.TMApp = (function () {
     const g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); navTab = null; if (g.dataset.go === 'messages' && g.closest('.tm-side,.lw-navbar')) TMDriverMsgs.tab('inbox'); open(g.dataset.go); return; }
     const s = e.target.closest('[data-signout]');
     if (s) {
-      if (s.dataset.signout === 'timeoff') { if (confirm('Sign out of Time Off?')) TMTimeOff.signOut(); }
-      else if (s.dataset.signout === 'messages') { if (confirm('Sign out of Driver Messages?')) TMDriverMsgs.signOut().then(renderSign); }
+      if (s.dataset.signout === 'messages') { if (confirm('Sign out of Driver Messages?')) TMDriverMsgs.signOut().then(renderSign); }
       else if (confirm('Sign out of Trailers?')) trailerSignOut();
     }
   });
@@ -205,7 +197,7 @@ window.TMApp = (function () {
   });
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 
-  return { open, refreshHub, setBadge, sessionExpired, setNavTab, trailerSignOut, managerName: () => (window.TMGate && TMGate.me() ? TMGate.me().name : TMTimeOff.name()) };
+  return { open, refreshHub, setBadge, sessionExpired, setNavTab, trailerSignOut, managerName: () => (window.TMGate && TMGate.me() ? TMGate.me().name : '') };
 })();
 // core.js looks for TSApp.sessionExpired
 window.TSApp = { sessionExpired: () => TMApp.sessionExpired(), setSub: () => {}, showSwitch: () => {} };
