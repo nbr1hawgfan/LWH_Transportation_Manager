@@ -145,7 +145,6 @@ window.TMApp = (function () {
     const parts = [];
     if (TMTimeOff.signedIn()) parts.push(`Time Off: signed in as <b>${TS.esc(TMTimeOff.name())}</b> <button class="btn outline sm" data-signout="timeoff">Sign out</button>`);
     if (state.mgrToken) parts.push('Trailers: signed in <button class="btn outline sm" data-signout="trailers">Sign out</button>');
-    if (TMDriverMsgs.signedIn()) parts.push('Driver Messages: signed in <button class="btn outline sm" data-signout="messages">Sign out</button>');
     $('hubSign').innerHTML = parts.length ? parts.map(p => `<div>${p}</div>`).join('') : '';
     if (!TMTimeOff.signedIn()) setBadge('timeoff', 0);
   }
@@ -206,7 +205,7 @@ window.TMApp = (function () {
   });
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 
-  return { open, refreshHub, setBadge, sessionExpired, setNavTab, managerName: () => TMTimeOff.name() };
+  return { open, refreshHub, setBadge, sessionExpired, setNavTab, trailerSignOut, managerName: () => (window.TMGate && TMGate.me() ? TMGate.me().name : TMTimeOff.name()) };
 })();
 // core.js looks for TSApp.sessionExpired
 window.TSApp = { sessionExpired: () => TMApp.sessionExpired(), setSub: () => {}, showSwitch: () => {} };
