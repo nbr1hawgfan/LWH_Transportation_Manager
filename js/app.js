@@ -10,6 +10,7 @@ window.TMApp = (function () {
     home:       { id: 'scrHome',           title: 'Logistics Warehouse' },
     drivers:    { id: 'scrDrivers',        title: 'Drivers' },
     hours:      { id: 'scrHours',          title: 'Driver Hours' },
+    pto:        { id: 'timeOff',           title: 'PTO & Time Off' },
     messages:   { id: 'scrMessages',       title: 'Driver Messages' },
     trailers:   { id: 'scrMgr',            title: 'Trailer Inspections' },
     dispatch:   { id: 'yardBoard',         title: 'Dispatch Board' },
@@ -17,7 +18,7 @@ window.TMApp = (function () {
     surcharge:  { id: 'fsc',               title: 'Fuel Surcharge' }
   };
   // Toolkit view names → ours (the copied Toolkit files call LWHUI.show)
-  const ALIAS = { yardBoard: 'dispatch', spotterTimesheets: 'home', timesheets: 'home', fuelboard: 'fuel', fsc: 'surcharge', home: 'home' };
+  const ALIAS = { timeOff: 'pto', yardBoard: 'dispatch', spotterTimesheets: 'home', timesheets: 'home', fuelboard: 'fuel', fsc: 'surcharge', home: 'home' };
 
   /* ---------- trailer sign-in ----------
      v2.4.0: uses the Transportation Manager sign-in (Api.gs action mgrLoginTm) — no PIN screen.
@@ -103,6 +104,8 @@ window.TMApp = (function () {
     if ((view === 'clock' || view === 'cards') && window.TMDriverMsgs) { setNavTab(view); open('messages', fromHash); TMDriverMsgs.tab(view); markNav('messages'); return; }
     view = ALIAS[view] || view;
     if (!SCREENS[view]) view = 'home';
+    // PTO opens on the Approvals tab here (managers)
+    if (view === 'pto' && current !== 'pto') { try { if (!sessionStorage.getItem('lwh_toTab')) sessionStorage.setItem('lwh_toTab', 'mgr'); } catch (e) {} }
     current = view;
     if (!fromHash) { const h = view === 'home' ? '' : '#' + view; if (location.hash !== h) history.pushState(null, '', h || location.pathname + location.search); }
     $('btnBack').hidden = view === 'home';
@@ -181,7 +184,7 @@ window.TMApp = (function () {
 
   /* ---------- wiring ---------- */
   // Links are also written into index.html, so they work even if an older config.js is cached
-  if (CFG.PTO_MANAGER_URL) { $('ptoLink').href = CFG.PTO_MANAGER_URL; document.querySelectorAll('[data-cfg="pto"]').forEach(a => a.href = CFG.PTO_MANAGER_URL); }
+  if (CFG.PTO_MANAGER_URL) { document.querySelectorAll('[data-cfg="pto"]').forEach(a => a.href = CFG.PTO_MANAGER_URL); }
   if (CFG.TRACKING_URL) { $('trackLink').href = CFG.TRACKING_URL; document.querySelectorAll('[data-cfg="track"]').forEach(a => a.href = CFG.TRACKING_URL); }
   // phone: Menu opens the left menu
   $('navToggle').onclick = () => { const on = document.body.classList.toggle('side-open'); $('navToggle').setAttribute('aria-expanded', on ? 'true' : 'false'); };
