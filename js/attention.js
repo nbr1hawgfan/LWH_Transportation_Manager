@@ -27,7 +27,6 @@ window.TMAttention = (function () {
   function render() {
     const box = $('hubAttn'); if (!box) return;
     const cards = [];
-    if (timeoff) cards.push({ n: timeoff, t: 'unpaid time off to approve', lv: 'warn', go: 'timeoff' });
     if (a) {
       if (a.msgs_unread) cards.push({ n: a.msgs_unread, t: 'unread driver messages', lv: 'bad', tab: 'inbox' });
       else if (a.msgs_open) cards.push({ n: a.msgs_open, t: 'driver messages not marked handled', lv: 'info', tab: 'inbox' });

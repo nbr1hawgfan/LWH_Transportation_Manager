@@ -127,11 +127,10 @@ window.TMGate = (function () {
   }
 
   async function signOut() {
-    if (!confirm('Sign out of Transportation Manager on this device?\n\nThis also signs you out of Time Off and Trailer Inspections here.')) return;
+    if (!confirm('Sign out of Transportation Manager on this device?\n\nThis also signs you out of Trailer Inspections here.')) return;
     const t = ls.get(TK);
     if (t) { try { await rpc('drv_logout', { p_token: t }); } catch (e) {} }
     ls.set(TK, null); ls.set('tm_me', null);
-    try { if (window.TMTimeOff && TMTimeOff.signedIn()) TMTimeOff.signOut(); } catch (e) {}
     try { if (window.TMApp && TMApp.trailerSignOut) TMApp.trailerSignOut(); } catch (e) {}
     try { const f = document.getElementById('dmFrame'); if (f && f.getAttribute('src') && window.TMDriverMsgs) TMDriverMsgs.reload(); } catch (e) {}
     if (window.TMApp) TMApp.open('home');
