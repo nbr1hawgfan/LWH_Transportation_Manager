@@ -179,3 +179,13 @@ body.gated { overflow: hidden; }
 .side-out:hover { border-color: var(--red); background: var(--red); }
 @media (max-width: 1000px) { .lw-nav-who { display: none !important; } }
 @media (max-width: 1500px) and (min-width: 1001px) { .lw-nav-btn span { display: none; } .lw-nav-btn { padding: 0 12px !important; } .lw-navbar .lw-nav-link { padding: 0 12px; } }
+/* v2.5.0: Other apps launcher */
+.hub-sec-note { font-family: inherit; font-weight: 500; font-size: 12px; letter-spacing: 0; text-transform: none; color: #77777f; margin-left: 6px; }
+.app-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 22px; }
+.app-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #fff; border: 1px solid #ddd; border-left: 4px solid var(--red); color: #111; text-decoration: none; min-height: 60px; }
+.app-link:hover { border-color: var(--red); background: #fff7f8; }
+.app-link .app-ic { display: grid; place-items: center; width: 38px; height: 38px; background: var(--red); flex: 0 0 auto; }
+.app-link svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.app-link b { display: block; font-size: 15px; }
+.app-link small { display: block; font-size: 12.5px; color: #666; margin-top: 2px; }
+@media (max-width: 560px) { .app-links { grid-template-columns: 1fr 1fr; } .app-link { padding: 10px; gap: 9px; } .app-link small { display: none; } }
