@@ -26,7 +26,7 @@ window.TS = (function () {
         : 'The server isn\'t set up for Trailer Shop yet (ShopApi.gs / Api.gs not deployed).');
     }
     if (!j.ok) {
-      if (j.error === 'SESSION_EXPIRED') { if (window.TSApp) TSApp.sessionExpired(); throw new Error('Your manager session expired. Enter the PIN again.'); }
+      if (j.error === 'SESSION_EXPIRED') { if (window.TSApp) TSApp.sessionExpired(); throw new Error('Your Trailer Inspections session ended — signing you back in. Try that again in a moment.'); }
       throw new Error(j.error || 'Request failed.');
     }
     return j;

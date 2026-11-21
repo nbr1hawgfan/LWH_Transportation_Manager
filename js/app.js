@@ -19,7 +19,9 @@ window.TMApp = (function () {
   // Toolkit view names → ours (the copied Toolkit files call LWHUI.show)
   const ALIAS = { yardBoard: 'dispatch', spotterTimesheets: 'home', timesheets: 'home', fuelboard: 'fuel', fsc: 'surcharge', home: 'home' };
 
-  /* ---------- trailer sign-in (Dashboard PIN, kept 8 hours on this device) ---------- */
+  /* ---------- trailer sign-in ----------
+     v2.4.0: uses the Transportation Manager sign-in (Api.gs action mgrLoginTm) — no PIN screen.
+     Falls back to the Dashboard PIN only if the trailer server doesn't have that yet or says no. */
   function loadTrailer() {
     try { const s = JSON.parse(localStorage.getItem(TRAILER_KEY)); return s && Date.now() - s.at < SESSION_MS ? s.token : null; } catch (e) { return null; }
   }
@@ -52,6 +54,19 @@ window.TMApp = (function () {
       }
     }, 'Checking PIN…');
   }
+  let autoAt = 0;
+  async function trailerAuto() {
+    const t = (() => { try { return localStorage.getItem('lwhdispatch_token') || ''; } catch (e) { return ''; } })();
+    if (!t || Date.now() - autoAt < 30000) return showPin();
+    autoAt = Date.now();
+    setSub('Trailer Inspections');
+    let err = null;
+    const j = await run(async () => { try { return await post({ action: 'mgrLoginTm', tmToken: t }); } catch (e) { err = e; } }, 'Opening Trailer Inspections…');
+    if (j && j.token) { saveTrailer(j.token); renderSign(); return open('trailers'); }
+    showPin();
+    // "Unknown action" = the trailer script hasn't been updated yet: just use the PIN, no error.
+    if (err && !/Unknown action/i.test(err.message)) $('pinErr').textContent = err.message;
+  }
   function trailerSignOut() {
     post({ action: 'mgrLogout', token: state.mgrToken }).catch(() => {});
     saveTrailer(null);
@@ -60,7 +75,7 @@ window.TMApp = (function () {
     if (current === 'trailers') open('home');
   }
   // core.js calls this when the trailer server says the session ended
-  function sessionExpired() { saveTrailer(null); renderSign(); if (current === 'trailers') showPin(); }
+  function sessionExpired() { saveTrailer(null); renderSign(); if (current === 'trailers') { autoAt = 0; trailerAuto(); } }
 
   /* ---------- trailer tabs ---------- */
   const VIEWS = { insp: 'mvInsp', an: 'mvAn', dl: 'mvDl', hist: 'mvHist', map: 'mvMap' };
@@ -96,7 +111,7 @@ window.TMApp = (function () {
     // the copied Toolkit screens load when their section gets the "active" class
     Object.values(SCREENS).forEach(s => { const el = $(s.id); if (el) el.classList.toggle('active', s.id === SCREENS[view].id); });
 
-    if (view === 'trailers' && !state.mgrToken) return showPin();
+    if (view === 'trailers' && !state.mgrToken) return trailerAuto();
     screen(SCREENS[view].id);
     if (view === 'home') { greet(); refreshHub(); }
     if (view === 'drivers') TMDrivers.open();
