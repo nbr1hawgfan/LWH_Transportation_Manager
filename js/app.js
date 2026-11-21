@@ -99,6 +99,8 @@ window.TMApp = (function () {
   }
   function setNavTab(t) { navTab = t || null; }
   function open(view, fromHash) {
+    // #clock / #cards (from a notification): the Time Clock tabs live inside Driver Messages
+    if ((view === 'clock' || view === 'cards') && window.TMDriverMsgs) { setNavTab(view); open('messages', fromHash); TMDriverMsgs.tab(view); markNav('messages'); return; }
     view = ALIAS[view] || view;
     if (!SCREENS[view]) view = 'home';
     current = view;

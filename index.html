@@ -91,6 +91,10 @@
           <div class="hero-wx" id="hubWx">Logistics Warehouse · Transportation</div>
           <div class="hero-time" id="hubTime"></div>
         </div>
+        <div class="push-banner" data-push-banner hidden>
+          <div class="push-b-txt"><b>Get notified on this device</b><span>A pop-up when a driver messages dispatch, and when a driver is still clocked in 12+ hours. Works with the app closed (browser open on a PC).</span></div>
+          <div class="push-b-btns"><button type="button" class="btn red" data-push-on>Turn on</button><button type="button" class="btn outline" data-push-later>Not now</button></div>
+        </div>
         <div class="hub-sec">Needs attention</div>
         <div class="hub-attn" id="hubAttn"></div>
         <div class="hub-sec">Other apps <span class="hub-sec-note">open in a new tab</span></div>
@@ -163,6 +167,11 @@
           </button>
         </div>
         <div class="hub-sign" id="hubSign"></div>
+        <div class="hub-sec">Notifications</div>
+        <div class="push-card">
+          <p>Driver messages and 12+ hour clock-ins pop up on this phone or PC. <b data-push-status>…</b></p>
+          <div class="push-b-btns"><button type="button" class="btn red" data-push-on>Turn on</button><button type="button" class="btn outline" data-push-test hidden>Send a test</button><button type="button" class="btn outline" data-push-off hidden>Turn off</button></div>
+        </div>
       </div>
     </section>
 
@@ -553,6 +562,9 @@
   <script src="js/drivers.js"></script>
   <script src="js/drivermsgs.js"></script>
   <script src="js/gate.js"></script>
+  <script>window.LWHPushCfg={app:'tm',token:()=>{ try{ return localStorage.getItem('lwhdispatch_token'); }catch(e){ return null; } },signedIn:()=>!!(window.TMGate&&TMGate.signedIn()),
+    open:u=>{ try{ const h=new URL(u).hash.replace('#',''); if(window.TMApp) TMApp.open(h||'messages'); }catch(e){} }};</script>
+  <script src="js/push.js"></script>
   <script src="js/driverhours.js"></script>
   <script src="js/attention.js"></script>
   <script src="js/app.js"></script>
