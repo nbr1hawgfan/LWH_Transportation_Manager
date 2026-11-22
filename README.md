@@ -30,10 +30,16 @@ Everything talks to the same Google Sheets and Apps Scripts as today:
 The addresses are in `config.js`.
 
 ## Shop Inventory
-- Tables `shop_parts`, `shop_stock_moves`, `shop_session_parts` and the `shop_*` functions in `supabase/migrations/20261122_shop_inventory.sql` (already applied to Supabase).
-- On hand lives on the part and every change writes a move, so any count can be traced back.
-- The Trailer Shop tech app (v1.3.0) has a Parts Stock tab, and its Parts Used rows pick from this list. Saving a repair sets that repair's parts: saving twice doesn't deduct twice, and removing a part from the repair puts it back on the shelf. Typed-in parts that aren't on the list are still saved on the work order, they just don't touch stock.
-- Getting started: Import > Load a starter list (or paste Chris's sheet) as **Names only**, then do a Count. Counts stay "not counted" until someone counts them, so a stale list never looks right when it isn't.
+- Stock is kept at two locations: **Trailer Shop** and **Off-Site Shop** (the portable building on the customer trailer yard). Locations live in `shop_locations`, so adding one later is one insert.
+- Tables: `shop_parts` (what the part is), `shop_stock` (on hand, bin, reorder point and last count per location), `shop_stock_moves` (every change, with its location), `shop_session_parts`. Functions `shop_*` in `supabase/migrations/20261122b_shop_inventory_locations.sql` (applied; it replaced the first, still-empty version).
+- Stock tab shows both locations side by side with a total; filter to one location. A part's window shows each location, lets you count / adjust / receive at either one, and **Move to other location** (a transfer writes a move at both).
+- Receive, Count and Import each pick a location. Import can also read a Location column ("Shop", "Off-Site", "Building" all work).
+- The Trailer Shop tech app (v1.4.0) shows both counts, and each part on a repair has a **From: Trailer Shop / Off-Site Shop** pick (it remembers the tech's last one). Saving the repair takes the part off that location.
+
+## Dispatch Board > Weekly Plan
+- The dispatcher's weekly driver sheet (the "charcuterie board" workbook) as a week calendar: drivers grouped the way the sheet groups them, a column per day with load #s as chips (tap to copy), loads per day, who's off, a BULLPEN section for loads with no driver yet, search across driver / truck / load # / city, and a Day view for phones. Read-only: planning stays in the sheet.
+- Feed: `gas/DispatchExtract.gs` replaces the Dispatch Extract project's Code.gs. It still writes Dispatch_Extract exactly as before, then sends the last 10 weeks of tabs to `dispatch_plan_push` (key in Script Properties `DISPATCH_SYNC_KEY`; only its sha256 is stored in `dispatch_plan_sync`). It also picks up Saturday/Sunday and the bullpen rows, which the sheet extract skips.
+- Tables / functions: `dispatch_plan`, `dispatch_plan_sync`, `dispatch_plan_push`, `dispatch_plan_week` in `supabase/migrations/20261122c_dispatch_plan.sql` (applied).
 
 ## Setup (GitHub Pages)
 1. Create a repo, for example `nbr1hawgfan/LWH_Transportation_Manager`.
