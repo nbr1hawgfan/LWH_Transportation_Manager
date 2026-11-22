@@ -66,6 +66,7 @@
       <button type="button" class="side-btn" data-nav="messages" data-go="messages"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg><span>Driver Messages</span><span class="side-badge" data-badge="messages" hidden>0</span></button>
       <div class="side-h">Trailers</div>
       <button type="button" class="side-btn" data-nav="trailers" data-go="trailers"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="15" height="10"/><circle cx="6" cy="18" r="2"/><circle cx="13" cy="18" r="2"/><path d="m16 11 2 2 4-4"/></svg><span>Trailer Inspections</span></button>
+      <button type="button" class="side-btn" data-nav="shop" data-go="shop"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg><span>Shop Inventory</span><span class="side-badge" data-badge="shop" hidden>0</span></button>
       <a class="side-btn" data-cfg="track" href="https://nbr1hawgfan.github.io/LWH_Driver-and-Trailer-Tracking/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Driver &amp; Trailer Tracking</span><em>↗</em></a>
       <div class="side-h">Dispatch</div>
       <button type="button" class="side-btn" data-nav="dispatch" data-go="dispatch"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16"/><path d="M3 9h18M9 9v11M12 13h6M12 16.5h4"/></svg><span>Dispatch Board</span></button>
@@ -149,6 +150,11 @@
           <button class="hub-tile" data-go="trailers">
             <span class="hub-ic"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="15" height="10"/><circle cx="6" cy="18" r="2"/><circle cx="13" cy="18" r="2"/><path d="m16 11 2 2 4-4"/></svg></span>
             <span class="hub-t"><b>Trailer Inspections</b><span>Review inspections, assign techs, work orders, shop reports and the trailer map.</span></span>
+          </button>
+          <button class="hub-tile" data-go="shop">
+            <span class="hub-ic"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg></span>
+            <span class="hub-t"><b>Shop Inventory</b><span>Trailer shop parts on hand: tires, hoses, lights, brakes. Receive, count, low stock, what got used.</span></span>
+            <span class="hub-badge" id="badgeShop" hidden>0</span>
           </button>
         </div>
         <div class="hub-sec">Dispatch</div>
@@ -485,6 +491,112 @@
       </div>
       </div>
     </section>
+
+    <!-- SHOP INVENTORY (Supabase shop_parts) -->
+    <section class="screen" id="scrShopInv" hidden>
+      <div class="tabs scroll" id="siTabs">
+        <button class="tab active" data-sitab="stock">Stock</button>
+        <button class="tab" data-sitab="receive">Receive</button>
+        <button class="tab" data-sitab="count">Count</button>
+        <button class="tab" data-sitab="activity">Activity</button>
+        <button class="tab" data-sitab="import">Import</button>
+      </div>
+      <div class="wrap wide">
+        <div class="si-msg" id="siMsg" hidden></div>
+
+        <!-- Stock -->
+        <div class="si-view" id="siStock">
+          <div class="kpis">
+            <div class="kpi"><b id="siKParts">--</b><span>Parts</span></div>
+            <div class="kpi red"><b id="siKLow">--</b><span>At / below reorder</span></div>
+            <div class="kpi amber"><b id="siKUncounted">--</b><span>Not counted yet</span></div>
+            <div class="kpi green"><b id="siKValue">--</b><span>Stock value</span></div>
+          </div>
+          <div class="filters">
+            <div class="f grow"><label class="lbl" for="siSearch">Search</label><input type="search" id="siSearch" placeholder="Part #, description, bin, vendor"></div>
+            <div class="f"><label class="lbl" for="siFCat">Category</label><select id="siFCat"><option value="">All categories</option></select></div>
+            <div class="f"><label class="lbl" for="siFShow">Show</label><select id="siFShow"><option value="">Active parts</option><option value="low">At / below reorder</option><option value="uncounted">Not counted yet</option><option value="out">Out of stock</option><option value="inactive">Inactive</option><option value="all">Everything</option></select></div>
+            <div class="f f-btns"><button class="btn red sm" id="siAdd">+ Add part</button><button class="btn dark sm" id="siCsv">Export CSV</button></div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><span>Shop stock</span><span class="muted-l" id="siCount">--</span></div>
+            <div class="table-wrap">
+              <table class="tbl si-tbl" id="siTable">
+                <thead><tr><th data-sort="description">Part</th><th data-sort="category">Category</th><th data-sort="bin">Bin</th><th data-sort="on_hand" class="num">On hand</th><th data-sort="reorder_point" class="num">Reorder at</th><th data-sort="used_90" class="num">Used 90 days</th><th data-sort="counted_at">Last counted</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <p class="muted">Parts a tech logs on a repair in the Trailer Shop app come off stock automatically. Tap a part to edit it, adjust it, or see its history.</p>
+        </div>
+
+        <!-- Receive -->
+        <div class="si-view" id="siReceive" hidden>
+          <div class="card"><div class="card-h">Receive parts</div><div class="card-b">
+            <p class="muted" style="margin-top:0">Parts that came in on a PO or from a parts run. They are added to stock right away. A cost you type here becomes the part's unit cost.</p>
+            <div class="grid2">
+              <div><label class="lbl" for="siRcvPo">PO #</label><input id="siRcvPo" maxlength="40" placeholder="Optional"></div>
+              <div><label class="lbl" for="siRcvVendor">Vendor</label><input id="siRcvVendor" maxlength="60" list="siVendorList" placeholder="Optional"></div>
+            </div>
+            <div class="si-lines-h"><span>Part</span><span>Qty</span><span>Unit cost</span><span></span></div>
+            <div id="siRcvLines"></div>
+            <button type="button" class="add-dashed si-add" id="siRcvAdd">+ Add line</button>
+            <label class="lbl" for="siRcvNote">Note</label><input id="siRcvNote" maxlength="200" placeholder="Optional">
+            <button class="btn red block" id="siRcvSave">Add to stock</button>
+          </div></div>
+        </div>
+
+        <!-- Count -->
+        <div class="si-view" id="siCountV" hidden>
+          <div class="card"><div class="card-h">Physical count</div><div class="card-b">
+            <p class="muted" style="margin-top:0">Walk the shelves and type what is actually there. Only the lines you fill in are saved; the rest stay as they are. A blank line is not a zero.</p>
+            <div class="filters slim">
+              <div class="f"><label class="lbl" for="siCntCat">Category</label><select id="siCntCat"><option value="">All categories</option></select></div>
+              <div class="f"><label class="lbl" for="siCntShow">Show</label><select id="siCntShow"><option value="uncounted">Not counted yet</option><option value="">Everything</option><option value="old">Not counted in 30+ days</option></select></div>
+              <div class="f grow"><label class="lbl" for="siCntSearch">Search</label><input type="search" id="siCntSearch" placeholder="Part # or description"></div>
+            </div>
+            <div id="siCntList"></div>
+            <button class="btn red block" id="siCntSave">Save count</button>
+          </div></div>
+        </div>
+
+        <!-- Activity -->
+        <div class="si-view" id="siActivity" hidden>
+          <div class="filters">
+            <div class="f"><label class="lbl" for="siActDays">Period</label><select id="siActDays"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select></div>
+            <div class="f"><label class="lbl" for="siActKind">Type</label><select id="siActKind"><option value="">Everything</option><option value="use">Used on repairs</option><option value="receive">Received</option><option value="count">Counts &amp; imports</option><option value="adjust">Adjustments</option></select></div>
+            <div class="f grow"><label class="lbl" for="siActSearch">Search</label><input type="search" id="siActSearch" placeholder="Part, trailer, WO, tech, PO"></div>
+            <div class="f f-btns"><button class="btn dark sm" id="siActCsv">Export CSV</button></div>
+          </div>
+          <div class="si-act-sum" id="siActSum"></div>
+          <div class="panel">
+            <div class="panel-h"><span>Stock activity</span><span class="muted-l" id="siActCount">--</span></div>
+            <div class="table-wrap">
+              <table class="tbl" id="siActTable">
+                <thead><tr><th>When</th><th>Type</th><th>Part</th><th class="num">Change</th><th class="num">After</th><th>Trailer / WO</th><th>Who</th><th>Note</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Import -->
+        <div class="si-view" id="siImport" hidden>
+          <div class="card"><div class="card-h">Import parts</div><div class="card-b">
+            <p class="muted" style="margin-top:0">Copy the rows from a Google Sheet or Excel (header row included) and paste them below, or pick a CSV file. Columns are matched by their header: part #, description / item, category, bin / location, qty / on hand, cost, reorder / min, vendor. A part already on the list (same part #, or same description) is updated, not added twice.</p>
+            <div class="row-btns" style="margin-bottom:10px"><label class="btn outline sm si-file">Pick a CSV file<input type="file" id="siImpFile" accept=".csv,.tsv,.txt,text/csv" hidden></label><button type="button" class="btn outline sm" id="siImpStarter">Load a starter list</button></div>
+            <textarea id="siImpText" class="si-imp-text" placeholder="Paste rows here (header row first)"></textarea>
+            <div class="si-imp-mode">
+              <label><input type="radio" name="siImpMode" value="names" checked> <b>Names only.</b> Add the parts, but leave every count as "not counted". Use this for an old list nobody trusts, then do a physical count.</label>
+              <label><input type="radio" name="siImpMode" value="counts"> <b>Counts are real.</b> Set on hand to the qty column. Use this right after a fresh count.</label>
+            </div>
+            <div id="siImpPreview"></div>
+            <button class="btn red block" id="siImpSave" disabled>Import</button>
+          </div></div>
+        </div>
+      </div>
+      <datalist id="siPartList"></datalist><datalist id="siVendorList"></datalist><datalist id="siCatList"></datalist>
+    </section>
   </main>
   </div>
 
@@ -510,6 +622,43 @@
       <div class="drv-meta muted" id="dfMeta"></div>
       <button class="btn red block" type="submit" id="dfSave">Save</button>
     </form>
+  </dialog>
+
+
+  <dialog id="siModal" class="tm-modal">
+    <div class="tm-modal-h"><b id="siModalTitle">Part</b><button class="tb-btn" id="siModalClose" aria-label="Close">✕</button></div>
+    <div class="tm-modal-b">
+      <div id="sfStockBox" hidden>
+        <div class="si-onhand" id="sfOnHand"></div>
+        <div class="si-adj">
+          <div><label class="lbl" for="sfAdjKind">Change stock</label><select id="sfAdjKind"><option value="count">Counted: set on hand to</option><option value="adjust">Add / remove (+ or −)</option><option value="receive">Received</option></select></div>
+          <div><label class="lbl" for="sfAdjQty">Qty</label><input id="sfAdjQty" type="number" inputmode="decimal" step="any"></div>
+          <div class="grow"><label class="lbl" for="sfAdjNote">Reason / note</label><input id="sfAdjNote" maxlength="200" placeholder="e.g. damaged, found on shelf"></div>
+          <div><button type="button" class="btn dark" id="sfAdjGo">Apply</button></div>
+        </div>
+        <div class="dh-side-h" style="margin-top:16px">History (last 12 months)</div>
+        <div id="sfHist" class="si-hist"></div>
+        <div class="dh-side-h" style="margin-top:18px">Part details</div>
+      </div>
+      <form id="siForm" autocomplete="off">
+        <div class="grid2">
+          <div class="full"><label class="lbl" for="sfDesc">Description</label><input id="sfDesc" required maxlength="120" placeholder="e.g. Gladhand seal, blue"></div>
+          <div><label class="lbl" for="sfNo">Part # (optional)</label><input id="sfNo" maxlength="40"></div>
+          <div><label class="lbl" for="sfCat">Category</label><input id="sfCat" list="siCatList" maxlength="40"></div>
+          <div><label class="lbl" for="sfBin">Bin / shelf</label><input id="sfBin" maxlength="40" placeholder="e.g. A-3"></div>
+          <div><label class="lbl" for="sfUom">Unit</label><input id="sfUom" maxlength="20" placeholder="each, ft, box, gal" list="siUomList"><datalist id="siUomList"><option>each</option><option>pair</option><option>box</option><option>kit</option><option>ft</option><option>roll</option><option>gal</option><option>qt</option><option>tube</option><option>case</option></datalist></div>
+          <div><label class="lbl" for="sfReorder">Reorder at (min)</label><input id="sfReorder" type="number" inputmode="decimal" min="0" step="any"></div>
+          <div><label class="lbl" for="sfReorderQty">Usually order</label><input id="sfReorderQty" type="number" inputmode="decimal" min="0" step="any"></div>
+          <div><label class="lbl" for="sfCost">Unit cost ($)</label><input id="sfCost" type="number" inputmode="decimal" min="0" step="0.01"></div>
+          <div><label class="lbl" for="sfVendor">Vendor</label><input id="sfVendor" list="siVendorList" maxlength="60"></div>
+          <div id="sfQtyWrap"><label class="lbl" for="sfQty">On hand now (counted)</label><input id="sfQty" type="number" inputmode="decimal" min="0" step="any" placeholder="Leave blank if not counted"></div>
+          <div><label class="lbl" for="sfActive">Status</label><select id="sfActive"><option value="true">Active</option><option value="false">Inactive (hidden from techs)</option></select></div>
+          <div class="full"><label class="lbl" for="sfNotes">Notes</label><textarea id="sfNotes" maxlength="300" style="min-height:56px"></textarea></div>
+        </div>
+        <div class="drv-meta muted" id="sfMeta"></div>
+        <button class="btn red block" type="submit" id="sfSave">Save part</button>
+      </form>
+    </div>
   </dialog>
 
   <dialog id="toModal" class="tm-modal">
@@ -561,6 +710,7 @@
   <script src="js/fuelboard.js"></script>
   <script src="js/fsc.js"></script>
   <script src="js/drivers.js"></script>
+  <script src="js/shopinv.js"></script>
   <script src="js/drivermsgs.js"></script>
   <script src="js/gate.js"></script>
   <script>window.LWHPushCfg={app:'tm',token:()=>{ try{ return localStorage.getItem('lwhdispatch_token'); }catch(e){ return null; } },signedIn:()=>!!(window.TMGate&&TMGate.signedIn()),

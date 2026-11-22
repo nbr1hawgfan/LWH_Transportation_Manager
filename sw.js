@@ -1,8 +1,8 @@
 // Bump VERSION when you push changes so phones pick up new files.
-const VERSION = 'tm-v2.7.1';
+const VERSION = 'tm-v2.8.0';
 const SHELL = ['./', 'index.html', 'styles.css', 'manager.css', 'theme.css', 'icons/company-logo.png', 'config.js', 'manifest.json',
   'js/core.js', 'js/compat.js', 'js/mgr.js', 'js/reports.js', 'js/map.js',
-  'js/yardboard.js', 'js/recruitboard.js', 'js/fuelboard.js', 'js/drivers.js', 'js/drivermsgs.js', 'js/gate.js', 'js/driverhours.js', 'js/attention.js', 'js/push.js', 'js/timeoff.js', 'js/fsc.js', 'js/app.js',
+  'js/yardboard.js', 'js/recruitboard.js', 'js/fuelboard.js', 'js/drivers.js', 'js/shopinv.js', 'js/drivermsgs.js', 'js/gate.js', 'js/driverhours.js', 'js/attention.js', 'js/push.js', 'js/timeoff.js', 'js/fsc.js', 'js/app.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

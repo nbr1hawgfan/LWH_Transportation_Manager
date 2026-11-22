@@ -13,6 +13,7 @@ window.TMApp = (function () {
     pto:        { id: 'timeOff',           title: 'PTO & Time Off' },
     messages:   { id: 'scrMessages',       title: 'Driver Messages' },
     trailers:   { id: 'scrMgr',            title: 'Trailer Inspections' },
+    shop:       { id: 'scrShopInv',        title: 'Shop Inventory' },
     dispatch:   { id: 'yardBoard',         title: 'Dispatch Board' },
     fuel:       { id: 'fuelboard',         title: 'Fuel Prices' },
     surcharge:  { id: 'fsc',               title: 'Fuel Surcharge' }
@@ -122,12 +123,14 @@ window.TMApp = (function () {
     if (view === 'drivers') TMDrivers.open();
     if (view === 'hours') TMDriverHours.open();
     if (view === 'messages') TMDriverMsgs.open();
+    if (view === 'shop') TMShopInv.open();
     if (view === 'trailers') { showTab(mtab); if (!TSMgr.isLoaded()) TSMgr.load(); }
   }
   function refresh() {
     if (current === 'drivers') return TMDrivers.refresh();
     if (current === 'hours') return TMDriverHours.refresh();
     if (current === 'messages') return TMDriverMsgs.reload();
+    if (current === 'shop') return TMShopInv.refresh();
     if (current === 'trailers' && !$('scrMgr').hidden) {
       if (mtab === 'insp') return TSMgr.load();
       if (mtab === 'map') return TSMap.refresh();
@@ -154,6 +157,7 @@ window.TMApp = (function () {
     renderSign();
     TMDriverMsgs.peek();
     TMAttention.refresh();
+    if (window.TMShopInv) TMShopInv.peek();
     greet();
   }
   function renderSign() {
