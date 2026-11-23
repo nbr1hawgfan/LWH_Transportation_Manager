@@ -496,3 +496,38 @@ b.neg { color: var(--red); } b.pos { color: var(--green); }
 #yardBoard .dp-hit mark { background: #ffe58a; }
 @media (max-width: 700px) { #yardBoard .dp-hit, #dpBox .dp-hit { grid-template-columns: 1fr 1fr; } .dp-hit-a { grid-column: 1 / -1; } .dp-hit-go { grid-column: 1 / -1; } }
 #yardBoard span.dp-load, #dpBox span.dp-load { display: inline-block; font: 800 11.5px/1.45 ui-monospace, Menlo, Consolas, monospace; color: #111; background: #eef2ff; border: 1px solid #d5ddf7; padding: 0 5px; }
+/* Weekly Plan on phones (v2.12.0) */
+.dp-sm { display: none; }
+.dp-dot { position: absolute; bottom: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50% !important; background: #e08a00; box-shadow: 0 0 0 2px #fff; }
+#dpBox .dp-day { position: relative; }
+#dpBox .dp-day.active .dp-dot { box-shadow: 0 0 0 2px #111; }
+@media (max-width: 700px) {
+  .dp-intro, .tk .dp-view, #dpWeekendWrap { display: none !important; }
+  .dp-introline { margin: 0 0 8px; font-size: 12.5px; }
+  .dp-lg { display: none; } .dp-sm { display: inline; }
+  .dp-bar { display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px auto; gap: 6px; margin-bottom: 8px; }
+  .dp-bar select { font-size: 14px; padding-left: 8px; padding-right: 4px; }
+  .dp-bar button { min-width: 0; padding: 0 8px; }
+  .dp-bar2 { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 6px; }
+  .dp-bar2 input, .dp-bar2 select { min-width: 0; font-size: 14px; }
+  .dp-box { margin-top: 10px; }
+  .dp-head { margin-bottom: 8px; }
+  .dp-head h3 { font-size: 17px; }
+  .dp-head .hint { font-size: 12px; }
+  .dp-days { position: sticky; z-index: 6; background: var(--bg, #f4f4f4); padding: 6px 0; margin: 0 0 6px; box-shadow: 0 6px 8px -8px rgba(0,0,0,.35); }
+  #dpBox .dp-day { padding: 6px 1px; }
+  .dp-day b { font-size: 11px; } .dp-day span { font-size: 12px; } .dp-day small { font-size: 10.5px; }
+  .dp-dayhead { font-size: 15px; margin: 2px 0 8px; }
+  .dp-chk > summary { padding: 8px 10px; gap: 6px; font-size: 13px; }
+  .dp-chk-pill { font-size: 10.5px; padding: 2px 6px; }
+  .dp-chk-b { padding: 0 10px 10px; }
+  .dp-chk-i { font-size: 13px; }
+  .dp-chk-d { min-width: 64px; }
+  .dp-card { grid-template-columns: 1fr; }
+  .dp-card-who { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid #eee; padding: 7px 10px; }
+  .dp-card-who b { display: inline; font-size: 15px; }
+  .dp-card-who .dp-truck { margin: 0; }
+  .dp-card-who .dp-note { margin: 0 0 0 auto; }
+  .dp-card-body { padding: 8px 10px; font-size: 14.5px; }
+  .dp-lgrp { margin: 12px 0 5px; }
+}
