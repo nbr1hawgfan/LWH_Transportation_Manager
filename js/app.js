@@ -158,6 +158,7 @@ window.TMApp = (function () {
     TMDriverMsgs.peek();
     TMAttention.refresh();
     if (window.TMShopInv) TMShopInv.peek();
+    if (window.TMDispatchPlan) TMDispatchPlan.attention();
     greet();
   }
   function renderSign() {
