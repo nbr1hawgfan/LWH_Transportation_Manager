@@ -56,9 +56,29 @@ window.TMDispatchPlan = (function () {
     });
     const first = (j.rows || [])[0];
     const start = first ? first.start : null, end = first ? first.end : null;
-    return { rows, groups, start, end, days: start ? weekDays(start, end) : [] };
+    const days = start ? weekDays(start, end) : [];
+    rows.forEach(r => {
+      r.driver = niceName(r.driver);
+      // Spotters: column B is their post (PERNOD AM, GLAT…). Show it under every weekday like a load.
+      r.spot = /^spotter/i.test(r.grp);
+      if (r.spot) {
+        r.post = r.truck; r.truck = '';
+        days.filter(d => { const k = D(d).getDay(); return k >= 1 && k <= 5; }).forEach(d => { r.cells[d] = r.cells[d] || { a: '', n: '' }; });
+      }
+      Object.values(r.cells).forEach(c => {
+        if (r.spot) c.post = r.post;
+        // OFF can be typed in the day's own column or in its NOTES column (the sheet does both)
+        c.offText = isOff(c.a) ? c.a : (isOff(c.n) && (!c.a || r.spot)) ? c.n : '';
+        c.off = !!c.offText;
+        c.cover = c.off && r.spot && c.a && !isOff(c.a) ? c.a : '';     // spotter off + a name typed in = who covers
+        c.noteShown = c.n && c.n !== c.offText ? c.n : '';
+      });
+    });
+    return { rows, groups, start, end, days };
   }
   const isOff = a => OFF_RE.test(String(a || '').trim());
+  // "JORDAN P." -> "Jordan P." so every name looks the same
+  const niceName = n => (n && n === n.toUpperCase() && /[A-Z]{2}/.test(n)) ? n.toLowerCase().replace(/(^|[\s.'-])([a-z])/g, (m, a, b) => a + b.toUpperCase()) : (n || '');
   const loadsIn = a => (String(a || '').match(LOAD_RE) || []);
   // split "A // B / C" into stops
   const stops = a => String(a || '').split(/\s+\/\/+\s*|\s+\/\s+|\s*\/\/\s*/).map(s => s.trim()).filter(Boolean);
@@ -104,15 +124,15 @@ window.TMDispatchPlan = (function () {
   function filteredGroups() {
     const q = $('dpSearch').value.trim().toLowerCase(), g = $('dpGroup').value;
     return st.wk.groups.filter(x => !g || x.name === g).map(x => ({ ...x, rows: x.rows.filter(r => !q ||
-      [r.driver, r.truck, r.grp].some(v => v && v.toLowerCase().includes(q)) ||
+      [r.driver, r.truck, r.grp, r.post].some(v => v && v.toLowerCase().includes(q)) ||
       Object.values(r.cells).some(c => (c.a + ' ' + c.n).toLowerCase().includes(q))) })).filter(x => x.rows.length);
   }
   function dayStats(day) {
     let loads = new Set(), working = 0, off = 0;
     st.wk.rows.forEach(r => {
-      const c = r.cells[day]; if (!c || !c.a) return;
-      loadsIn(c.a).forEach(l => loads.add(l));
-      if (r.driver && !r.section) { if (isOff(c.a)) off++; else working++; }
+      const c = r.cells[day]; if (!c || !(c.a || c.post || c.off)) return;
+      if (!c.off) loadsIn(c.a).forEach(l => loads.add(l));
+      if (r.driver && !r.section) { if (c.off) off++; else working++; }
     });
     return { loads: loads.size, working, off };
   }
@@ -129,14 +149,15 @@ window.TMDispatchPlan = (function () {
     const groups = filteredGroups(), q = $('dpSearch').value.trim();
     const today = st.data.today;
     const totals = w.days.reduce((a, d) => { const s = dayStats(d); a.loads += s.loads; return a; }, { loads: 0 });
-    const drivers = w.rows.filter(r => r.driver && !r.section).length;
+    const drivers = w.rows.filter(r => r.driver && !r.section && !r.spot).length;
+    const spotters = w.rows.filter(r => r.spot).length;
     const bullpen = w.rows.filter(r => r.section).reduce((a, r) => a + Object.values(r.cells).filter(c => c.a).length, 0);
 
     let html = `<div class="dp-head"><div><h3>Week of ${esc(longDate(w.start))} – ${esc(longDate(w.end))}</h3>
-      <span class="hint">Tab ${esc(st.tab)} · ${drivers} drivers · ${totals.loads} load #s planned${bullpen ? ` · <b class="dp-bp-n">${bullpen} in the bullpen</b>` : ''}</span></div></div>`;
+      <span class="hint">Tab ${esc(st.tab)} · ${drivers} drivers${spotters ? ` · ${spotters} spotters` : ''} · ${totals.loads} load #s planned${bullpen ? ` · <b class="dp-bp-n">${bullpen} in the bullpen</b>` : ''}</span></div></div>`;
 
     if (view === 'week') {
-      const quiet = groups.filter(g => !g.bullpen && g.rows.every(r => !Object.values(r.cells).some(c => c.a)));
+      const quiet = groups.filter(g => !g.bullpen && g.rows.every(r => !Object.values(r.cells).some(c => c.a || c.post || c.off)));
       const busy = groups.filter(g => !quiet.includes(g));
       html += `<div class="dp-scroll"><table class="dp-grid" style="--dp-days:${days.length}"><thead><tr><th class="dp-who">Driver</th>${days.map(d => {
         const s = dayStats(d), dt = D(d);
@@ -144,10 +165,11 @@ window.TMDispatchPlan = (function () {
           <small>${s.loads ? s.loads + ' loads' : ''}${s.off ? `${s.loads ? ' · ' : ''}${s.off} off` : ''}</small></th>`;
       }).join('')}</tr></thead><tbody>`;
       busy.forEach(g => {
-        html += `<tr class="dp-g${g.bullpen ? ' bp' : ''}"><th colspan="${days.length + 1}"><span>${esc(g.bullpen ? g.name : g.name)}</span>${g.bullpen ? '<small>Loads not on a driver yet</small>' : `<small>${g.rows.length} ${g.rows.length === 1 ? 'driver' : 'drivers'}</small>`}</th></tr>`;
+        html += `<tr class="dp-g${g.bullpen ? ' bp' : ''}"><th colspan="${days.length + 1}"><span>${esc(g.bullpen ? g.name : g.name)}</span>${g.bullpen ? '<small>Loads not on a driver yet</small>' : `<small>${g.rows.length} ${g.rows[0].spot ? (g.rows.length === 1 ? 'spotter' : 'spotters') : (g.rows.length === 1 ? 'driver' : 'drivers')}</small>`}</th></tr>`;
         g.rows.forEach(r => {
           html += `<tr class="dp-r"><th class="dp-who">${r.driver ? `<b>${esc(r.driver)}</b>` : g.bullpen ? '<b class="muted">No driver</b>' : ''}${r.truck ? `<span class="dp-truck">${esc(r.truck)}</span>` : ''}</th>` +
-            days.map(d => cellHtml(r.cells[d], d === today, q, [0, 6].includes(D(d).getDay()))).join('') + '</tr>';
+            days.map(d => { const b = body(r.cells[d], q), cls = (d === today ? ' today' : '') + ([0, 6].includes(D(d).getDay()) ? ' wknd' : '');
+              return `<td class="dp-c ${b.cls}${cls}">${b.html}</td>`; }).join('') + '</tr>';
         });
       });
       html += '</tbody></table></div>';
@@ -160,13 +182,13 @@ window.TMDispatchPlan = (function () {
       groups.forEach(g => {
         const rows = g.rows.filter(r => g.bullpen ? (r.cells[d] && r.cells[d].a) : true);
         if (!rows.length) return;
-        const any = rows.some(r => r.cells[d] && r.cells[d].a);
+        const any = rows.some(r => { const c = r.cells[d]; return c && (c.a || c.post || c.off); });
         if (!any && !g.bullpen) { html += `<div class="dp-lgrp quiet"><span>${esc(g.name)}</span> <small>${rows.map(r => esc(r.driver || r.truck)).join(' · ')}</small> <em>nothing planned</em></div>`; return; }
         html += `<div class="dp-lgrp${g.bullpen ? ' bp' : ''}"><span>${esc(g.name)}</span>${g.bullpen ? '<small>Loads not on a driver yet</small>' : ''}</div>`;
         rows.forEach(r => {
-          const c = r.cells[d];
-          html += `<div class="dp-card${!c || !c.a ? ' none' : isOff(c.a) ? ' off' : ''}"><div class="dp-card-who">${r.driver ? `<b>${esc(r.driver)}</b>` : '<b class="muted">No driver</b>'}${r.truck ? `<span class="dp-truck">${esc(r.truck)}</span>` : ''}${c && c.n ? `<span class="dp-note" title="Note">${esc(c.n)}</span>` : ''}</div>
-            <div class="dp-card-body">${!c || !c.a ? '<span class="muted">Nothing planned</span>' : isOff(c.a) ? `<span class="dp-offlbl">${esc(c.a)}</span>` : stops(c.a).map(x => `<div class="dp-stop">${fmtStop(x, q)}</div>`).join('')}</div></div>`;
+          const b = body(r.cells[d], q, true);
+          html += `<div class="dp-card ${b.cls}"><div class="dp-card-who">${r.driver ? `<b>${esc(r.driver)}</b>` : '<b class="muted">No driver</b>'}${r.truck ? `<span class="dp-truck">${esc(r.truck)}</span>` : ''}</div>
+            <div class="dp-card-body">${b.html}</div></div>`;
         });
       });
     }
@@ -174,12 +196,17 @@ window.TMDispatchPlan = (function () {
     html += `<p class="hint dp-foot">Read-only copy of the dispatch sheet. Make changes in the sheet; they show up here after the next sync. Tap a load # to copy it.</p>`;
     box.innerHTML = html;
   }
-  function cellHtml(c, today, q, wknd) {
-    const cls = (today ? ' today' : '') + (wknd ? ' wknd' : '');
-    if (!c || (!c.a && !c.n)) return `<td class="dp-c empty${cls}"></td>`;
-    if (isOff(c.a)) return `<td class="dp-c off${cls}"><span class="dp-offlbl">${esc(c.a)}</span>${c.n ? `<span class="dp-note">${esc(c.n)}</span>` : ''}</td>`;
-    const hit = q && (c.a + ' ' + c.n).toLowerCase().includes(q.toLowerCase());
-    return `<td class="dp-c${cls}${hit ? ' hit' : ''}">${c.n ? `<span class="dp-note" title="Note">${esc(c.n)}</span>` : ''}${stops(c.a).map(x => `<div class="dp-stop">${fmtStop(x, q)}</div>`).join('')}</td>`;
+  // What goes in one driver's day, used by both the week grid and the phone day view.
+  function body(c, q, card) {
+    if (!c || (!c.a && !c.n && !c.post)) return { cls: 'empty none', html: card ? '<span class="muted">Nothing planned</span>' : '' };
+    const note = c.noteShown ? `<span class="dp-note" title="Note">${esc(c.noteShown)}</span>` : '';
+    const post = c.post ? `<div class="dp-post">${fmtStop(c.post, q)}</div>` : '';
+    if (c.off) {
+      return { cls: 'off', html: note + `<span class="dp-offlbl">${esc(c.offText)}</span>` +
+        (c.post ? `<div class="dp-post muted-post">${esc(c.post)}</div>` + (c.cover ? `<div class="dp-cover">Covering: <b>${fmtStop(c.cover, q)}</b></div>` : '<div class="dp-need">Needs cover</div>') : '') };
+    }
+    const hit = q && [c.a, c.n, c.post].join(' ').toLowerCase().includes(q.toLowerCase());
+    return { cls: hit ? 'hit' : '', html: note + post + stops(c.a).map(x => `<div class="dp-stop">${fmtStop(x, q)}</div>`).join('') };
   }
   function quietHtml(groups) {
     return `<div class="dp-quiet"><div class="dp-quiet-h">Nothing planned on the sheet this week</div>${groups.map(g => `<div class="dp-quiet-g"><b>${esc(g.name)}</b> ${g.rows.map(r => `<span>${esc(r.driver || '')}${r.truck ? ` <em>${esc(r.truck)}</em>` : ''}</span>`).join('')}</div>`).join('')}</div>`;
@@ -189,7 +216,8 @@ window.TMDispatchPlan = (function () {
   function csv() {
     if (!st.loaded) return;
     const w = st.wk, head = ['Group', 'Truck', 'Driver'].concat(w.days.map(d => DOW[D(d).getDay()] + ' ' + d), w.days.map(d => 'Notes ' + DOW[D(d).getDay()]));
-    const lines = [head].concat(w.rows.map(r => [r.section ? r.section : r.grp, r.truck, r.driver].concat(w.days.map(d => (r.cells[d] || {}).a || ''), w.days.map(d => (r.cells[d] || {}).n || ''))));
+    const dayText = c => !c ? '' : [c.post, c.off ? c.offText.toUpperCase() : '', c.cover ? 'Covering: ' + c.cover : (c.off ? '' : c.a)].filter(Boolean).join(' · ');
+    const lines = [head].concat(w.rows.map(r => [r.section ? r.section : r.grp, r.truck || r.post || '', r.driver].concat(w.days.map(d => dayText(r.cells[d])), w.days.map(d => (r.cells[d] || {}).n || ''))));
     const body = lines.map(l => l.map(v => { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(',')).join('\r\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + body], { type: 'text/csv' }));
     a.download = 'dispatch-week-' + w.start + '.csv'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);

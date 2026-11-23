@@ -38,6 +38,7 @@ The addresses are in `config.js`.
 
 ## Dispatch Board > Weekly Plan
 - The dispatcher's weekly driver sheet (the "charcuterie board" workbook) as a week calendar: drivers grouped the way the sheet groups them, a column per day with load #s as chips (tap to copy), loads per day, who's off, a BULLPEN section for loads with no driver yet, search across driver / truck / load # / city, and a Day view for phones. Read-only: planning stays in the sheet.
+- Spotters show like the drivers: their post (PERNOD AM, GLAT…) under each weekday. OFF typed in a day or its NOTES column shows as off for anyone; for a spotter it also says **Needs cover** until a name is typed in that day's column (then "Covering: name"). All-caps names display in normal case.
 - Feed: `gas/DispatchExtract.gs` replaces the Dispatch Extract project's Code.gs. It still writes Dispatch_Extract exactly as before, then sends the last 10 weeks of tabs to `dispatch_plan_push` (key in Script Properties `DISPATCH_SYNC_KEY`; only its sha256 is stored in `dispatch_plan_sync`). It also picks up Saturday/Sunday and the bullpen rows, which the sheet extract skips.
 - Tables / functions: `dispatch_plan`, `dispatch_plan_sync`, `dispatch_plan_push`, `dispatch_plan_week` in `supabase/migrations/20261122c_dispatch_plan.sql` (applied).
 
