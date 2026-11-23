@@ -414,12 +414,12 @@
           <label>Driver<select id="ybDriver"><option value="">All drivers</option></select></label>
         </div>
         <div id="ybPlanCtl" hidden>
-          <p class="hint">The dispatch sheet's weekly driver plan, as a calendar. <span id="dpSynced" class="dp-synced"></span></p>
+          <p class="hint dp-introline"><span class="dp-intro">The dispatch sheet's weekly driver plan, as a calendar. </span><span id="dpSynced" class="dp-synced"></span></p>
           <div class="dp-bar">
             <button type="button" id="dpPrev" class="ghost" aria-label="Previous week">‹</button>
             <select id="dpWeek" aria-label="Week"></select>
             <button type="button" id="dpNext" class="ghost" aria-label="Next week">›</button>
-            <button type="button" id="dpThis" class="ghost">This week</button>
+            <button type="button" id="dpThis" class="ghost"><span class="dp-lg">This week</span><span class="dp-sm">Now</span></button>
           </div>
           <div class="dp-bar2">
             <input id="dpSearch" type="search" placeholder="Driver, truck, load #, customer, city" autocomplete="off" aria-label="Search the plan">
