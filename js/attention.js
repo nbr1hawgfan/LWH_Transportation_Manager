@@ -10,6 +10,8 @@ window.TMAttention = (function () {
   const KEY = 'sb_publishable_PYlWSW6-Gi-QZl91IXUq0Q_W5mO3sDT';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
   let a = null, timeoff = null, state = 'loading';
+  const extra = {};   // cards from other modules, e.g. extra.dispatch from the Weekly Plan
+  function setExtra(key, cards) { extra[key] = cards || []; render(); }
 
   async function refresh() {
     const t = (() => { try { return localStorage.getItem('lwhdispatch_token') || ''; } catch (e) { return ''; } })();
@@ -39,17 +41,19 @@ window.TMAttention = (function () {
       if (a.sites_pending) cards.push({ n: a.sites_pending, t: 'site note suggestions to approve', lv: 'warn', tab: 'sites' });
       if (a.no_pin) cards.push({ n: a.no_pin, t: "drivers who can't sign in yet", sub: 'No PTO PIN and no Toolkit PIN', lv: 'info', tab: 'pins' });
     }
-    let html = cards.map(c => `<button type="button" class="att-card att-${c.lv}" ${c.tab ? `data-att-tab="${c.tab}"` : `data-att-go="${c.go}"`}>
+    Object.values(extra).forEach(list => list.forEach(c => cards.push(c)));
+    let html = cards.map(c => `<button type="button" class="att-card att-${c.lv}" ${c.tab ? `data-att-tab="${c.tab}"` : `data-att-go="${c.go}"`}${c.plan ? ` data-att-plan="${esc(c.plan)}"` : ''}>
         <b>${esc(c.n)}</b><span class="att-t">${esc(c.t)}</span>${c.sub ? `<span class="att-s">${esc(c.sub)}</span>` : ''}</button>`).join('');
     if (state === 'signin') html += `<button type="button" class="att-card att-signin" data-att-tab="inbox"><span class="att-t">Sign in to Driver Messages</span><span class="att-s">to see driver messages, PODs, site notes and driver sign-in here</span></button>`;
     else if (state === 'offline') html += `<div class="att-note">Couldn't check — no connection.</div>`;
-    else if (state === 'ok' && !cards.length) html = `<div class="att-good">✓ Nothing waiting on you right now.</div>`;
+    else if ((state === 'ok' || Object.values(extra).some(l => l.length)) && !cards.length) html = `<div class="att-good">✓ Nothing waiting on you right now.</div>`;
     else if (state === 'loading') html += `<div class="att-note">Checking…</div>`;
     box.innerHTML = html;
   }
 
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-att-tab],[data-att-go]'); if (!b) return;
+    if (b.dataset.attPlan && window.TMDispatchPlan) return TMDispatchPlan.focus(null, b.dataset.attPlan);
     if (b.dataset.attGo) return TMApp.open(b.dataset.attGo);
     TMDriverMsgs.tab(b.dataset.attTab);
     TMApp.setNavTab(b.dataset.attTab);
@@ -59,5 +63,5 @@ window.TMAttention = (function () {
   window.addEventListener('message', e => { if (e.origin === location.origin && e.data && e.data.lwhmc) { clearTimeout(window.__attT); window.__attT = setTimeout(refresh, 1500); } });
   setInterval(() => { if (!document.hidden) refresh(); }, 60000);
 
-  return { refresh, setTimeoff };
+  return { refresh, setTimeoff, setExtra };
 })();

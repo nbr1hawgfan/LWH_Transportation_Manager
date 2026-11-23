@@ -166,18 +166,18 @@ window.TMDispatchPlan = (function () {
     if (m.length === 1) return { id: m[0].EmployeeID, auto: true };
     return { id: null, options: m.length ? m : st.abs.cands.filter(firstOk) };
   }
-  function linkFor(r) {
+  function linkFor(r, names) {
     if (!r.driver || r.section) return null;
-    const saved = (st.data.names || {})[nameKey(r.driver)];
+    const saved = (names || {})[nameKey(r.driver)];
     if (saved) return { id: saved.emp_id || null, manual: true, none: !saved.emp_id, by: saved.by };
     return autoMatch(r.driver);
   }
   // Puts tracker absences on the week's cells and works out where the sheet and the tracker disagree.
-  function annotate() {
-    const w = st.wk; if (!w || !st.abs) return;
+  function annotate(w, names) {
+    if (!w || !st.abs) return null;
     w.rows.forEach(r => {
       Object.keys(r.cells).forEach(d => { const c = r.cells[d]; if (c._absOnly) delete r.cells[d]; else { delete c.abs; delete c.absState; } });
-      r.link = linkFor(r);
+      r.link = linkFor(r, names);
     });
     const issues = [], used = new Set();
     w.rows.forEach(r => {
@@ -208,7 +208,7 @@ window.TMDispatchPlan = (function () {
     const unmatched = [];
     const seen = new Set();
     w.rows.forEach(r => { if (r.link && !r.link.id && !r.link.none && !seen.has(nameKey(r.driver))) { seen.add(nameKey(r.driver)); unmatched.push(r); } });
-    st.check = { issues: issues.sort((a, b) => a.d.localeCompare(b.d) || a.r.row - b.r.row), others, unmatched };
+    return { issues: issues.sort((a, b) => a.d.localeCompare(b.d) || a.r.row - b.r.row), others, unmatched };
   }
   function empOptions(sel, opts) {
     const list = st.abs ? st.abs.cands : [];
@@ -322,7 +322,7 @@ window.TMDispatchPlan = (function () {
     const hasWeekend = w.days.some(d => [0, 6].includes(D(d).getDay()) && w.rows.some(r => r.cells[d] && r.cells[d].a));
     $('dpWeekendWrap').hidden = view !== 'week' || hasWeekend;   // weekend columns always show when they have plans
     const days = w.days.filter(d => view !== 'week' || st.weekend || hasWeekend || ![0, 6].includes(D(d).getDay()));
-    annotate();
+    st.check = annotate(st.wk, st.data.names);
     const groups = filteredGroups(), q = $('dpSearch').value.trim();
     const today = st.data.today;
     const totals = w.days.reduce((a, d) => { const s = dayStats(d); a.loads += s.loads; return a; }, { loads: 0 });
@@ -371,9 +371,10 @@ window.TMDispatchPlan = (function () {
         });
       });
     }
-    if (!groups.length) html += '<div class="dp-empty">Nothing matches.</div>';
+    if (!groups.length) html += /^\d{4,7}$/.test(q) ? '<div id="dpElsewhere"><div class="dp-empty">Not on this week. Looking in the other weeks…</div></div>' : '<div class="dp-empty">Nothing matches.</div>';
     html += `<p class="hint dp-foot">Read-only copy of the dispatch sheet. Make changes in the sheet; they show up here after the next sync. Tap a load # to copy it.</p>`;
     box.innerHTML = html;
+    if ($('dpElsewhere')) findLoad(q, $('dpElsewhere'), true);
   }
   // What goes in one driver's day, used by both the week grid and the phone day view.
   function body(c, q, card) {
@@ -391,6 +392,99 @@ window.TMDispatchPlan = (function () {
   }
   function quietHtml(groups) {
     return `<div class="dp-quiet"><div class="dp-quiet-h">Nothing planned on the sheet this week</div>${groups.map(g => `<div class="dp-quiet-g"><b>${esc(g.name)}</b> ${g.rows.map(r => `<span>${esc(r.driver || '')}${r.truck ? ` <em>${esc(r.truck)}</em>` : ''}</span>`).join('')}</div>`).join('')}</div>`;
+  }
+
+
+  /* ---------- load # lookup (every synced week) ---------- */
+  let findSeq = 0;
+  async function findLoad(raw, box, inPlan) {
+    const q = String(raw || '').replace(/\D/g, '');
+    const seq = ++findSeq;
+    box.hidden = false;
+    if (!inPlan) box.innerHTML = `<div class="card"><p class="hint" style="margin:0">Looking for load <b>${esc(q)}</b> on the weekly plan…</p></div>`;
+    try {
+      const j = await rpc('dispatch_find_load', { p_q: q });
+      if (seq !== findSeq) return;
+      const hits = j.hits || [];
+      const items = hits.map(h => {
+        const who = h.driver ? niceName(h.driver) : (h.section ? 'Bullpen · no driver yet' : '');
+        const dt = D(h.day);
+        return `<div class="dp-hit" role="button" tabindex="0" data-goweek="${esc(h.tab)}" data-goday="${esc(h.day)}">
+          <span class="dp-hit-d"><b>${DOW[dt.getDay()]}</b> ${esc(longDate(h.day))}</span>
+          <span class="dp-hit-w"><b>${esc(who)}</b>${h.truck ? ` <span class="dp-truck">${esc(h.truck)}</span>` : ''}<small>${esc(h.section || h.grp || '')}</small></span>
+          <span class="dp-hit-a">${stops(h.a || '').map(x => `<div class="dp-stop">${fmtStop(x, q).replace(/<button type="button" class="dp-load"[^>]*>([^<]*)<\/button>/g, '<span class="dp-load">$1</span>')}</div>`).join('')}${h.n ? `<span class="dp-note">${esc(h.n)}</span>` : ''}</span>
+          <span class="dp-hit-go">Open week ›</span></div>`;
+      }).join('');
+      const head = `<div class="yb-driver-head"><h3 style="margin:0">Load ${esc(q)}</h3>${inPlan ? '' : '<button type="button" class="ghost" data-findclear>✕ Clear</button>'}</div>`;
+      box.innerHTML = `<div class="card dp-find">${head}${hits.length
+        ? `<p class="hint">On the dispatch sheet ${hits.length === 1 ? 'once' : hits.length + ' times'} in the synced weeks${hits.length === 40 ? ' (newest 40)' : ''}:</p><div class="dp-hits">${items}</div>`
+        : `<p class="hint">Not on the dispatch sheet in the last 10 weeks. It may be in McLeod only, or typed differently on the sheet.</p>`}</div>`;
+    } catch (e) {
+      if (seq === findSeq) box.innerHTML = `<div class="card"><p class="hint" style="margin:0">${esc(e.message)}</p></div>`;
+    }
+  }
+  // Open the Weekly Plan on a week and day (from a load # hit or a Home card)
+  function focus(tab, day) {
+    if (window.TMApp && TMApp.open) TMApp.open('dispatch');
+    const b = document.querySelector('#ybTabs [data-ybtab="plan"]'); if (b && !b.classList.contains('active')) b.click();
+    const f = document.getElementById('ybFind'); if (f) { f.hidden = true; f.innerHTML = ''; }
+    const fi = document.getElementById('ybFindInput'); if (fi) fi.value = '';
+    $('dpSearch').value = ''; st.day = day || st.day; st.chkOpen = true;
+    load(tab || null).then(() => {
+      if (day && st.wk && !st.wk.days.includes(day)) {
+        const w = (st.data.weeks || []).find(x => x.start <= day && day <= x.end);
+        if (w) return load(w.tab).then(() => { st.day = day; render(); });
+      }
+      if (day) { st.day = day; render(); }
+    }).then(() => $('dpBox').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
+  /* ---------- Home > Needs attention: today and the next workday ---------- */
+  let attAt = 0, attBusy = false;
+  async function attention(force) {
+    if (!window.TMAttention || !TMAttention.setExtra || attBusy) return;
+    if (!force && Date.now() - attAt < 5 * 60000) return;
+    if (!token()) return TMAttention.setExtra('dispatch', []);
+    attBusy = true;
+    try {
+      const j = await rpc('dispatch_plan_week', { p_tab: null });
+      await loadAbs(false);
+      const today = j.today, nd = D(today);
+      do { nd.setDate(nd.getDate() + 1); } while ([0, 6].includes(nd.getDay()));
+      const days = [today, iso(nd)].filter(d => ![0, 6].includes(D(d).getDay()));
+      const weeks = [build(j)];
+      const w0 = weeks[0];
+      if (days.some(d => !w0.days.includes(d))) {
+        const next = (j.weeks || []).find(x => x.start <= days[days.length - 1] && days[days.length - 1] <= x.end && x.tab !== j.tab);
+        if (next) weeks.push(build(await rpc('dispatch_plan_week', { p_tab: next.tab })));
+      }
+      const lab = d => d === today ? 'Today' : DOW[D(d).getDay()];
+      let bp = {}, cover = [], abs = [];
+      weeks.forEach(w => {
+        const ck = annotate(w, j.names);
+        days.filter(d => w.days.includes(d)).forEach(d => {
+          w.rows.forEach(r => {
+            const c = r.cells[d]; if (!c) return;
+            if (r.section && c.a) bp[d] = (bp[d] || 0) + 1;
+            if (r.spot && c.off && !c.cover) cover.push({ d, r });
+          });
+          if (ck) ck.issues.filter(x => x.d === d).forEach(x => abs.push(x));
+        });
+      });
+      const cards = [];
+      const firstDay = (list, k) => (list[0] || {})[k];
+      if (cover.length) cards.push({ n: cover.length, t: cover.length === 1 ? 'spotter post needs cover' : 'spotter posts need cover', lv: 'bad',
+        sub: cover.slice(0, 4).map(x => `${x.r.post} ${lab(x.d)} (${x.r.driver} off)`).join(', '), day: firstDay(cover, 'd') });
+      const bpN = Object.values(bp).reduce((a, b) => a + b, 0);
+      if (bpN) cards.push({ n: bpN, t: bpN === 1 ? 'bullpen load without a driver' : 'bullpen loads without a driver', lv: 'warn',
+        sub: days.filter(d => bp[d]).map(d => `${lab(d)}: ${bp[d]}`).join(' · ') + ' · tap to see them', day: days.find(d => bp[d]) });
+      if (abs.length) cards.push({ n: abs.length, t: abs.length === 1 ? "absence doesn't match the sheet" : "absences don't match the sheet", lv: 'warn',
+        sub: abs.slice(0, 4).map(x => `${x.r.driver} ${lab(x.d)}`).join(', ') + ' · sheet vs. absence tracker', day: firstDay(abs, 'd') });
+      cards.forEach(c => { c.go = 'dispatch'; c.plan = c.day; });
+      TMAttention.setExtra('dispatch', cards);
+      attAt = Date.now();
+    } catch (e) { /* the rest of Needs attention still shows */ }
+    finally { attBusy = false; }
   }
 
   /* ---------- export ---------- */
@@ -420,11 +514,17 @@ window.TMDispatchPlan = (function () {
       if (l) { const n = l.dataset.load; (navigator.clipboard ? navigator.clipboard.writeText(n) : Promise.reject()).then(() => window.TS && TS.toast ? TS.toast('Copied load # ' + n, 'ok') : 0).catch(() => {}); return; }
       const d = e.target.closest('[data-dpday]'); if (d) { st.day = d.dataset.dpday; render(); }
       const u = e.target.closest('[data-unlink]'); if (u) saveLink(u.dataset.unlink, '');
+      const h = e.target.closest('[data-goweek]'); if (h) { $('dpSearch').value = ''; st.day = h.dataset.goday; load(h.dataset.goweek); }
     });
     $('dpBox').addEventListener('change', e => { const s = e.target.closest('select[data-linkname]'); if (s && s.value !== '') saveLink(s.dataset.linkname, s.value); });
     $('dpBox').addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('dp-chk')) st.chkOpen = e.target.open; }, true);
+    document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('dp-hit')) e.target.click(); });
+    // load # hits shown in the Dispatch Board's find area
+    document.getElementById('ybFind') && document.getElementById('ybFind').addEventListener('click', e => {
+      const h = e.target.closest('[data-goweek]'); if (h) focus(h.dataset.goweek, h.dataset.goday);
+    });
     let rt = null; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (!st.view && st.loaded && !$('dpBox').hidden) render(); }, 200); });
   }
   window.addEventListener('load', init);
-  return { open, refresh, csv };
+  return { open, refresh, csv, findLoad, focus, attention };
 })();

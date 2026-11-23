@@ -287,7 +287,11 @@
     try{ const saved=localStorage.getItem('tm_yb_tab'); if(['plan','day','yards','recruit'].includes(saved)) tab=saved; }catch(e){}
     el('ybSearch').addEventListener('input',renderYards);
     el('ybMinDays').addEventListener('change',renderYards);
-    el('ybFindForm').addEventListener('submit',e=>{ e.preventDefault(); findTrailer(el('ybFindInput').value); el('ybFindInput').blur(); });
+    el('ybFindForm').addEventListener('submit',e=>{ e.preventDefault(); const v=el('ybFindInput').value.trim();
+      // a load # (7 digits starting with 0, or "load 116936") looks on the Weekly Plan; anything else is a trailer
+      if(/^0\d{6}$/.test(v)||/^(load|ld)\s*#?\s*\d{4,7}$/i.test(v)){ el('ybResults').hidden=true; window.TMDispatchPlan.findLoad(v, el('ybFind')); }
+      else findTrailer(v);
+      el('ybFindInput').blur(); });
     el('yardBoard').addEventListener('click',e=>{
       if(e.target.closest('[data-findclear]')){ clearFind(); return; }
       const f=e.target.closest('[data-find]');
